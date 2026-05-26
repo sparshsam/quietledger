@@ -1,0 +1,17 @@
+{
+  "name": "QuietLedger",
+  "short_name": "QuietLedger",
+  "description": "Money without noise.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#10100e",
+  "theme_color": "#10100e",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

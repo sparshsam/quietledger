@@ -1,0 +1,116 @@
+import type { LedgerData } from "./types";
+
+export const ledgerData: LedgerData = {
+  accounts: [
+    { id: "chequing", name: "Chequing", kind: "chequing", subtitle: "Main everyday account", balance: 2842.51, currency: "CAD" },
+    { id: "savings", name: "Savings", kind: "savings", subtitle: "Emergency fund", balance: 8910.2, currency: "CAD" },
+    { id: "cash", name: "Cash", kind: "cash", subtitle: "On hand", balance: 340, currency: "CAD" },
+    { id: "crypto", name: "Crypto", kind: "crypto", subtitle: "Long term", balance: 1214.75, currency: "CAD" },
+    { id: "credit", name: "Credit cards", kind: "credit", subtitle: "2 accounts", balance: -1237.18, currency: "CAD" },
+    { id: "loans", name: "Loans", kind: "loan", subtitle: "Student loan", balance: -12450, currency: "CAD" },
+  ],
+  monthlySnapshots: [
+    {
+      month: "2026-05",
+      label: "May 2026",
+      daysLeft: 30,
+      metrics: [
+        { id: "income", label: "Income", amount: 5430, ratio: 0.86, tone: "sage" },
+        { id: "essential", label: "Essential spending", amount: -2156.34, ratio: 0.66, tone: "quiet" },
+        { id: "optional", label: "Optional spending", amount: -742.18, ratio: 0.42, tone: "quiet" },
+        { id: "recurring", label: "Recurring obligations", amount: -1237.18, ratio: 0.72, tone: "quiet" },
+        { id: "savings", label: "Savings movement", amount: 1118.3, ratio: 0.84, tone: "sage" },
+        { id: "debt", label: "Debt progress", amount: -412.5, ratio: 0.74, tone: "amber" },
+      ],
+    },
+    {
+      month: "2026-04",
+      label: "April 2026",
+      daysLeft: 0,
+      metrics: [
+        { id: "income", label: "Income", amount: 5210, ratio: 0.82, tone: "sage" },
+        { id: "essential", label: "Essential spending", amount: -2198.9, ratio: 0.68, tone: "quiet" },
+        { id: "optional", label: "Optional spending", amount: -624.04, ratio: 0.34, tone: "quiet" },
+        { id: "recurring", label: "Recurring obligations", amount: -1218.13, ratio: 0.7, tone: "quiet" },
+        { id: "savings", label: "Savings movement", amount: 940, ratio: 0.7, tone: "sage" },
+        { id: "debt", label: "Debt progress", amount: -412.5, ratio: 0.74, tone: "amber" },
+      ],
+    },
+  ],
+  patterns: [
+    {
+      id: "delivery",
+      title: "Food delivery increased during high-workload weeks.",
+      detail: "A practical pressure signal, not a failure.",
+      delta: "+$118.44 over April",
+      tone: "sage",
+      category: "Food delivery",
+    },
+    {
+      id: "subscriptions",
+      title: "Two recurring charges may be forgotten.",
+      detail: "Review when you have a quiet minute.",
+      delta: "Duplicate media and storage plans",
+      tone: "amber",
+      category: "Subscriptions",
+    },
+    {
+      id: "convenience",
+      title: "Convenience spending clustered around late evenings.",
+      detail: "Mostly rides, takeout, and pharmacy runs.",
+      delta: "11 transactions after 9 PM",
+      tone: "paper",
+      category: "Survival spending",
+    },
+  ],
+  memories: [
+    {
+      id: "feb-2026",
+      month: "February 2026",
+      summary: "A quieter month with one major purchase and more health-related errands.",
+      entries: [
+        { label: "Higher coffee spending", detail: "+$36.20 vs January", amount: 36.2 },
+        { label: "Fewer outings", detail: "-$68.70 vs January", amount: -68.7 },
+        { label: "Laptop purchase", detail: "-$1,249.00 on Feb 14", amount: -1249 },
+        { label: "Increased pharmacy expenses", detail: "+$45.30 vs January", amount: 45.3 },
+      ],
+    },
+    {
+      id: "apr-2026",
+      month: "April 2026",
+      summary: "Work stretched later into the evenings, but the budget held steady.",
+      entries: [
+        { label: "More delivery meals", detail: "+$118.44 vs March", amount: 118.44 },
+        { label: "Lower transit costs", detail: "Two fewer office days", amount: -42 },
+        { label: "Insurance review note", detail: "Coverage changes due in May" },
+        { label: "Savings transfer completed", detail: "+$940.00 to emergency fund", amount: 940 },
+      ],
+    },
+  ],
+  forecastItems: [
+    { id: "internet", date: "May 3", label: "Internet", amount: -69.99, kind: "bill" },
+    { id: "mobile", date: "May 5", label: "Mobile plan", amount: -59, kind: "bill" },
+    { id: "rent", date: "May 12", label: "Rent", amount: -1600, kind: "bill" },
+    { id: "insurance", date: "May 15", label: "Insurance", amount: -112.5, kind: "bill" },
+    { id: "gym", date: "May 22", label: "Gym", amount: -29, kind: "bill" },
+    { id: "low-1", date: "May 11 - May 13", label: "Low-cash pressure window", amount: 0, kind: "pressure" },
+    { id: "low-2", date: "May 26 - May 28", label: "Low-cash pressure window", amount: 0, kind: "pressure" },
+  ],
+  lifeCostEvents: [
+    { id: "bonus", month: "Dec 2025", label: "Year-end bonus", date: "Dec 24", kind: "income" },
+    { id: "insurance-car", month: "Jan 2026", label: "Car insurance", date: "Jan 5", kind: "recurring" },
+    { id: "laptop", month: "Feb 2026", label: "Laptop purchase", date: "Feb 14", kind: "large-expense" },
+    { id: "annual", month: "Mar 2026", label: "Annual subscription", date: "Mar 3", kind: "recurring" },
+    { id: "tax-refund", month: "Apr 2026", label: "Tax refund", date: "Apr 20", kind: "income" },
+    { id: "property", month: "May 2026", label: "Property tax", date: "May 15", kind: "large-expense" },
+  ],
+  transactions: [
+    { id: "t1", date: "2026-05-01", description: "Grocery Store", category: "Groceries", accountId: "chequing", amount: -64.38 },
+    { id: "t2", date: "2026-04-30", description: "Salary", category: "Income", accountId: "chequing", amount: 2715 },
+    { id: "t3", date: "2026-04-29", description: "Transit Pass", category: "Transport", accountId: "chequing", amount: -96 },
+    { id: "t4", date: "2026-04-28", description: "Coffee Shop", category: "Food & Drink", accountId: "chequing", amount: -4.65 },
+    { id: "t5", date: "2026-04-27", description: "Pharmacy", category: "Health", accountId: "chequing", amount: -23.17 },
+    { id: "t6", date: "2026-04-26", description: "Uber Eats", category: "Food delivery", accountId: "credit", amount: -31.4, note: "Late work night" },
+    { id: "t7", date: "2026-04-24", description: "Streaming Bundle", category: "Subscriptions", accountId: "credit", amount: -18.99 },
+  ],
+};

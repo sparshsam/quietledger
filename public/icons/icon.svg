@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="QuietLedger icon">
+  <rect width="128" height="128" rx="18" fill="#10100e"/>
+  <rect x="27" y="22" width="74" height="84" rx="7" fill="#eee8dc"/>
+  <path d="M43 44h42M43 61h42M43 78h28" stroke="#242018" stroke-width="6" stroke-linecap="round"/>
+  <path d="M33 22v84" stroke="#88a874" stroke-width="5"/>
+</svg>
