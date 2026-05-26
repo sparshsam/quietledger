@@ -11,6 +11,7 @@ import {
   CircleDollarSign,
   Cloud,
   Columns3,
+  Copy,
   CreditCard,
   Download,
   Eye,
@@ -19,7 +20,9 @@ import {
   Landmark,
   LayoutDashboard,
   Moon,
+  Pencil,
   PiggyBank,
+  Plus,
   ReceiptText,
   Search,
   Settings,
@@ -53,7 +56,7 @@ import {
   saveLedgerState,
 } from "@/lib/data/persistence";
 import { ledgerData } from "@/lib/data/seed";
-import type { Account, AccountKind, CategoryPattern, ImportMetadata, LifeCostEvent, MonthlySnapshot } from "@/lib/data/types";
+import type { Account, AccountKind, CategoryPattern, ImportMetadata, LifeCostEvent, MonthlySnapshot, Transaction } from "@/lib/data/types";
 import { PwaRegister } from "@/components/pwa-register";
 
 const currency = new Intl.NumberFormat("en-CA", {
@@ -76,8 +79,57 @@ const accountIcons: Record<AccountKind, typeof Banknote> = {
   cash: Banknote,
   crypto: CircleDollarSign,
   credit: CreditCard,
+  "credit-card": CreditCard,
   loan: Landmark,
+  investment: CircleDollarSign,
+  other: WalletCards,
 };
+
+const accountKindOptions: Array<{ value: AccountKind; label: string }> = [
+  { value: "cash", label: "Cash" },
+  { value: "chequing", label: "Chequing" },
+  { value: "savings", label: "Savings" },
+  { value: "credit-card", label: "Credit card" },
+  { value: "loan", label: "Loan" },
+  { value: "investment", label: "Investment" },
+  { value: "other", label: "Other" },
+];
+
+const categoryOptions = [
+  "Groceries",
+  "Rent",
+  "Food delivery",
+  "Transport",
+  "Subscriptions",
+  "Income",
+  "Debt",
+  "Utilities",
+  "Shopping",
+  "Health",
+  "Misc",
+];
+
+type TransactionFormValues = {
+  id?: string;
+  date: string;
+  description: string;
+  merchant: string;
+  amount: string;
+  direction: "expense" | "income";
+  accountId: string;
+  category: string;
+  note: string;
+};
+
+type AccountFormValues = {
+  id?: string;
+  name: string;
+  kind: AccountKind;
+  subtitle: string;
+  balance: string;
+};
+
+const today = new Date().toISOString().slice(0, 10);
 
 const csvFields: Array<{ field: CsvField; label: string; required?: boolean }> = [
   { field: "date", label: "Date", required: true },
@@ -112,30 +164,54 @@ export default function Home() {
   const [defaultImportAccountId, setDefaultImportAccountId] = useState("chequing");
   const [currentImportId, setCurrentImportId] = useState("");
   const [importNotice, setImportNotice] = useState("No CSV loaded yet.");
+  const [transactionForm, setTransactionForm] = useState<TransactionFormValues>({
+    date: today,
+    description: "",
+    merchant: "",
+    amount: "",
+    direction: "expense",
+    accountId: "chequing",
+    category: "Misc",
+    note: "",
+  });
+  const [transactionError, setTransactionError] = useState("");
+  const [accountForm, setAccountForm] = useState<AccountFormValues>({
+    name: "",
+    kind: "chequing",
+    subtitle: "",
+    balance: "",
+  });
+  const [accountError, setAccountError] = useState("");
   const jsonImportRef = useRef<HTMLInputElement | null>(null);
   const skipNextSaveRef = useRef(false);
   const nextSaveNoticeRef = useRef<string | null>(null);
 
   const importedTransactions = transactions.filter((transaction) => transaction.source === "csv");
   const currentLedgerData = { ...ledgerData, accounts, transactions, monthlySnapshots, memories, forecastItems, importMetadata };
+  const activeAccounts = accounts.filter((account) => !account.archivedAt);
   const accountsWithBalances = useMemo(
     () =>
       accounts.map((account) => ({
         ...account,
         balance:
           account.balance +
-          importedTransactions
+          transactions
+            .filter((transaction) => transaction.source === "csv" || transaction.source === "manual")
             .filter((transaction) => transaction.accountId === account.id)
             .reduce((total, transaction) => total + transaction.amount, 0),
       })),
-    [accounts, importedTransactions],
+    [accounts, transactions],
   );
+  const visibleAccountsWithBalances = accountsWithBalances.filter((account) => !account.archivedAt);
   const monthOptions = useMemo(() => buildMonthOptions(transactions, monthlySnapshots), [monthlySnapshots, transactions]);
 
   const fallbackSnapshot =
     monthlySnapshots.find((item) => item.month === selectedMonth) ?? monthlySnapshots[0] ?? ledgerData.monthlySnapshots[0];
   const snapshot = buildSnapshot(selectedMonth, transactions, fallbackSnapshot);
-  const selectedAccount = accountsWithBalances.find((account) => account.id === selectedAccountId) ?? accountsWithBalances[0];
+  const selectedAccount =
+    visibleAccountsWithBalances.find((account) => account.id === selectedAccountId) ??
+    visibleAccountsWithBalances[0] ??
+    accountsWithBalances[0];
   const selectedMemory = memories.find((memory) => memory.id === selectedMemoryId) ?? memories[0] ?? ledgerData.memories[0];
   const filteredPatterns = ledgerData.patterns.filter((pattern) =>
     `${pattern.title} ${pattern.detail} ${pattern.category}`.toLowerCase().includes(patternFilter.toLowerCase()),
@@ -149,13 +225,13 @@ export default function Home() {
         ? buildImportPreview({
             parsed: parsedCsv,
             mapping: csvMapping,
-            accounts,
+            accounts: activeAccounts,
             existingTransactions: transactions,
             defaultAccountId: defaultImportAccountId,
             importId: currentImportId,
           })
         : [],
-    [accounts, csvMapping, currentImportId, defaultImportAccountId, parsedCsv, transactions],
+    [activeAccounts, csvMapping, currentImportId, defaultImportAccountId, parsedCsv, transactions],
   );
   const validImportRows = importPreview.filter((row) => row.transaction && !hasError(row) && !row.duplicate);
   const duplicateImportRows = importPreview.filter((row) => row.duplicate);
@@ -278,6 +354,125 @@ export default function Home() {
     setStorageNotice("Local browser data cleared. Demo fallback is showing.");
   }
 
+  function saveManualTransaction() {
+    const amountValue = Number(transactionForm.amount);
+    if (!transactionForm.date || !transactionForm.description.trim() || !Number.isFinite(amountValue) || amountValue <= 0) {
+      setTransactionError("Add a date, description, and positive amount before saving.");
+      return;
+    }
+
+    const signedAmount = transactionForm.direction === "expense" ? -Math.abs(amountValue) : Math.abs(amountValue);
+    const nextTransaction: Transaction = {
+      id: transactionForm.id ?? `manual-${Date.now()}`,
+      date: transactionForm.date,
+      description: transactionForm.description.trim(),
+      merchant: transactionForm.merchant.trim() || undefined,
+      amount: signedAmount,
+      accountId: transactionForm.accountId,
+      category: transactionForm.category,
+      note: transactionForm.note.trim() || undefined,
+      source: "manual",
+    };
+
+    nextSaveNoticeRef.current = transactionForm.id ? "Manual transaction updated." : "Manual transaction saved locally.";
+    setTransactions((current) =>
+      transactionForm.id
+        ? current.map((transaction) => (transaction.id === transactionForm.id ? nextTransaction : transaction))
+        : [nextTransaction, ...current],
+    );
+    setTransactionForm({
+      date: today,
+      description: "",
+      merchant: "",
+      amount: "",
+      direction: "expense",
+      accountId: activeAccounts[0]?.id ?? "chequing",
+      category: "Misc",
+      note: "",
+    });
+    setTransactionError("");
+    setActiveNav("Transactions");
+  }
+
+  function editTransaction(transaction: Transaction) {
+    setTransactionForm({
+      id: transaction.id,
+      date: transaction.date,
+      description: transaction.description,
+      merchant: transaction.merchant ?? "",
+      amount: Math.abs(transaction.amount).toFixed(2),
+      direction: transaction.amount < 0 ? "expense" : "income",
+      accountId: transaction.accountId,
+      category: transaction.category,
+      note: transaction.note ?? "",
+    });
+    setTransactionError("");
+  }
+
+  function duplicateTransaction(transaction: Transaction) {
+    const copy: Transaction = {
+      ...transaction,
+      id: `manual-${Date.now()}`,
+      description: `${transaction.description} copy`,
+      source: "manual",
+    };
+    nextSaveNoticeRef.current = "Transaction duplicated locally.";
+    setTransactions((current) => [copy, ...current]);
+  }
+
+  function deleteTransaction(transaction: Transaction) {
+    if (!window.confirm(`Delete "${transaction.description}" from the local ledger?`)) return;
+    nextSaveNoticeRef.current = "Transaction deleted locally.";
+    setTransactions((current) => current.filter((item) => item.id !== transaction.id));
+  }
+
+  function saveAccount() {
+    const balance = Number(accountForm.balance);
+    if (!accountForm.name.trim() || !Number.isFinite(balance)) {
+      setAccountError("Add an account name and starting balance before saving.");
+      return;
+    }
+
+    const nextAccount: Account = {
+      id: accountForm.id ?? `account-${Date.now()}`,
+      name: accountForm.name.trim(),
+      kind: accountForm.kind,
+      subtitle: accountForm.subtitle.trim() || (accountKindOptions.find((item) => item.value === accountForm.kind)?.label ?? "Account"),
+      balance,
+      currency: "CAD",
+    };
+
+    nextSaveNoticeRef.current = accountForm.id ? "Account updated locally." : "Account created locally.";
+    setAccounts((current) =>
+      accountForm.id ? current.map((account) => (account.id === accountForm.id ? { ...account, ...nextAccount } : account)) : [nextAccount, ...current],
+    );
+    setSelectedAccountId(nextAccount.id);
+    setDefaultImportAccountId(nextAccount.id);
+    setTransactionForm((current) => ({ ...current, accountId: nextAccount.id }));
+    setAccountForm({ name: "", kind: "chequing", subtitle: "", balance: "" });
+    setAccountError("");
+  }
+
+  function editAccount(account: Account) {
+    setAccountForm({
+      id: account.id,
+      name: account.name,
+      kind: normalizeAccountKind(account.kind),
+      subtitle: account.subtitle,
+      balance: account.balance.toFixed(2),
+    });
+    setAccountError("");
+  }
+
+  function archiveAccount(account: Account) {
+    if (!window.confirm(`Archive "${account.name}"? Existing transactions will remain in the ledger.`)) return;
+    nextSaveNoticeRef.current = "Account archived locally.";
+    setAccounts((current) =>
+      current.map((item) => (item.id === account.id ? { ...item, archivedAt: new Date().toISOString() } : item)),
+    );
+    if (selectedAccountId === account.id) setSelectedAccountId(activeAccounts.find((item) => item.id !== account.id)?.id ?? "chequing");
+  }
+
   return (
     <main className="min-h-screen bg-[var(--graphite)] text-[var(--ink)]">
       <PwaRegister />
@@ -374,7 +569,7 @@ export default function Home() {
           <div className="dashboard-grid">
             <Panel className="accounts-panel" title="Accounts" action="View all accounts">
               <div className="account-list">
-                {accountsWithBalances.map((account) => (
+                {visibleAccountsWithBalances.map((account) => (
                   <AccountRow
                     key={account.id}
                     account={account}
@@ -497,6 +692,63 @@ export default function Home() {
             </Panel>
 
             <Panel
+              title={transactionForm.id ? "Edit transaction" : "Manual transaction"}
+              className="manual-panel"
+              control={
+                <span className="privacy-chip">
+                  <Plus size={14} aria-hidden />
+                  Local entry
+                </span>
+              }
+            >
+              <ManualTransactionForm
+                values={transactionForm}
+                accounts={activeAccounts}
+                error={transactionError}
+                onChange={setTransactionForm}
+                onSave={saveManualTransaction}
+                onCancel={() => {
+                  setTransactionForm({
+                    date: today,
+                    description: "",
+                    merchant: "",
+                    amount: "",
+                    direction: "expense",
+                    accountId: activeAccounts[0]?.id ?? "chequing",
+                    category: "Misc",
+                    note: "",
+                  });
+                  setTransactionError("");
+                }}
+              />
+            </Panel>
+
+            <Panel
+              title={accountForm.id ? "Edit account" : "Account management"}
+              className="account-management-panel"
+              control={
+                <span className="privacy-chip">
+                  <WalletCards size={14} aria-hidden />
+                  {activeAccounts.length} active
+                </span>
+              }
+            >
+              <AccountManagement
+                values={accountForm}
+                accounts={accountsWithBalances}
+                error={accountError}
+                onChange={setAccountForm}
+                onSave={saveAccount}
+                onCancel={() => {
+                  setAccountForm({ name: "", kind: "chequing", subtitle: "", balance: "" });
+                  setAccountError("");
+                }}
+                onEdit={editAccount}
+                onArchive={archiveAccount}
+              />
+            </Panel>
+
+            <Panel
               title="Local data"
               className="data-panel"
               control={
@@ -572,7 +824,7 @@ export default function Home() {
                   }
                   defaultAccountId={defaultImportAccountId}
                   onDefaultAccountChange={setDefaultImportAccountId}
-                  accounts={accounts}
+                  accounts={activeAccounts}
                   rows={importPreview}
                   validCount={validImportRows.length}
                   duplicateCount={duplicateImportRows.length}
@@ -638,6 +890,7 @@ export default function Home() {
           <span>Category</span>
           <span>Account</span>
           <span>Amount</span>
+          <span>Actions</span>
         </div>
         {rows.map((transaction) => (
           <div className="table-row" key={transaction.id}>
@@ -646,6 +899,17 @@ export default function Home() {
             <span>{transaction.category}</span>
             <span>{accountsWithBalances.find((account) => account.id === transaction.accountId)?.name ?? selectedAccount.name}</span>
             <em className={transaction.amount < 0 ? "negative" : "positive"}>{currency.format(transaction.amount)}</em>
+            <span className="row-actions">
+              <button onClick={() => editTransaction(transaction)} aria-label={`Edit ${transaction.description}`}>
+                <Pencil size={14} aria-hidden />
+              </button>
+              <button onClick={() => duplicateTransaction(transaction)} aria-label={`Duplicate ${transaction.description}`}>
+                <Copy size={14} aria-hidden />
+              </button>
+              <button onClick={() => deleteTransaction(transaction)} aria-label={`Delete ${transaction.description}`}>
+                <Trash2 size={14} aria-hidden />
+              </button>
+            </span>
           </div>
         ))}
       </div>
@@ -794,6 +1058,167 @@ function CsvImportPreview({
   );
 }
 
+function ManualTransactionForm({
+  values,
+  accounts,
+  error,
+  onChange,
+  onSave,
+  onCancel,
+}: {
+  values: TransactionFormValues;
+  accounts: Account[];
+  error: string;
+  onChange: (values: TransactionFormValues) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="ledger-form">
+      <div className="form-grid">
+        <label>
+          <span>Date</span>
+          <input type="date" value={values.date} onChange={(event) => onChange({ ...values, date: event.target.value })} />
+        </label>
+        <label>
+          <span>Description</span>
+          <input value={values.description} onChange={(event) => onChange({ ...values, description: event.target.value })} placeholder="Grocery Store" />
+        </label>
+        <label>
+          <span>Merchant</span>
+          <input value={values.merchant} onChange={(event) => onChange({ ...values, merchant: event.target.value })} placeholder="Optional" />
+        </label>
+        <label>
+          <span>Amount</span>
+          <input type="number" min="0" step="0.01" value={values.amount} onChange={(event) => onChange({ ...values, amount: event.target.value })} placeholder="0.00" />
+        </label>
+        <label>
+          <span>Type</span>
+          <select value={values.direction} onChange={(event) => onChange({ ...values, direction: event.target.value as TransactionFormValues["direction"] })}>
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+          </select>
+        </label>
+        <label>
+          <span>Account</span>
+          <select value={values.accountId} onChange={(event) => onChange({ ...values, accountId: event.target.value })}>
+            {accounts.map((account) => (
+              <option key={account.id} value={account.id}>
+                {account.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Category</span>
+          <select value={values.category} onChange={(event) => onChange({ ...values, category: event.target.value })}>
+            {categoryOptions.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="wide-field">
+          <span>Notes</span>
+          <input value={values.note} onChange={(event) => onChange({ ...values, note: event.target.value })} placeholder="Optional memory or context" />
+        </label>
+      </div>
+      {error ? <p className="gentle-error">{error}</p> : <p className="gentle-help">Manual entries stay in this browser and are included in backups.</p>}
+      <div className="form-actions">
+        <button onClick={onSave}>
+          <Plus size={16} aria-hidden />
+          {values.id ? "Save changes" : "Add transaction"}
+        </button>
+        {values.id ? <button onClick={onCancel}>Cancel edit</button> : null}
+      </div>
+    </div>
+  );
+}
+
+function AccountManagement({
+  values,
+  accounts,
+  error,
+  onChange,
+  onSave,
+  onCancel,
+  onEdit,
+  onArchive,
+}: {
+  values: AccountFormValues;
+  accounts: Account[];
+  error: string;
+  onChange: (values: AccountFormValues) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  onEdit: (account: Account) => void;
+  onArchive: (account: Account) => void;
+}) {
+  return (
+    <div className="ledger-form">
+      <div className="form-grid account-form-grid">
+        <label>
+          <span>Name</span>
+          <input value={values.name} onChange={(event) => onChange({ ...values, name: event.target.value })} placeholder="Everyday card" />
+        </label>
+        <label>
+          <span>Type</span>
+          <select value={values.kind} onChange={(event) => onChange({ ...values, kind: event.target.value as AccountKind })}>
+            {accountKindOptions.map((kind) => (
+              <option key={kind.value} value={kind.value}>
+                {kind.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Starting balance</span>
+          <input type="number" step="0.01" value={values.balance} onChange={(event) => onChange({ ...values, balance: event.target.value })} placeholder="0.00" />
+        </label>
+        <label>
+          <span>Subtitle</span>
+          <input value={values.subtitle} onChange={(event) => onChange({ ...values, subtitle: event.target.value })} placeholder="Optional" />
+        </label>
+      </div>
+      {error ? <p className="gentle-error">{error}</p> : <p className="gentle-help">Archive hides an account but keeps its transaction history.</p>}
+      <div className="form-actions">
+        <button onClick={onSave}>
+          <Plus size={16} aria-hidden />
+          {values.id ? "Save account" : "Create account"}
+        </button>
+        {values.id ? <button onClick={onCancel}>Cancel edit</button> : null}
+      </div>
+      <div className="managed-account-list">
+        {accounts.length === 0 ? (
+          <p className="empty-state">No accounts yet. Add one above to start a local ledger.</p>
+        ) : (
+          accounts.map((account) => (
+            <div key={account.id} className={account.archivedAt ? "managed-account archived" : "managed-account"}>
+              <span>
+                <strong>{account.name}</strong>
+                <small>
+                  {accountKindLabel(account.kind)} · {account.archivedAt ? "Archived" : currency.format(account.balance)}
+                </small>
+              </span>
+              <span className="row-actions">
+                <button onClick={() => onEdit(account)} aria-label={`Edit ${account.name}`}>
+                  <Pencil size={14} aria-hidden />
+                </button>
+                {!account.archivedAt ? (
+                  <button onClick={() => onArchive(account)} aria-label={`Archive ${account.name}`}>
+                    <Archive size={14} aria-hidden />
+                  </button>
+                ) : null}
+              </span>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
 function AccountRow({ account, selected, onSelect }: { account: Account; selected: boolean; onSelect: () => void }) {
   const Icon = accountIcons[account.kind];
 
@@ -913,7 +1338,12 @@ function buildMonthOptions(transactions: typeof ledgerData.transactions, snapsho
 
 function buildSnapshot(month: string, transactions: typeof ledgerData.transactions, fallback: MonthlySnapshot): MonthlySnapshot {
   const monthTransactions = transactions.filter((transaction) => transaction.date.startsWith(month));
-  if (monthTransactions.length === 0 || !monthTransactions.some((transaction) => transaction.source === "csv")) return fallback;
+  if (
+    monthTransactions.length === 0 ||
+    !monthTransactions.some((transaction) => transaction.source === "csv" || transaction.source === "manual")
+  ) {
+    return fallback;
+  }
 
   const income = sumWhere(monthTransactions, (transaction) => transaction.amount > 0);
   const essential = sumWhere(monthTransactions, (transaction) =>
@@ -954,4 +1384,13 @@ function ratio(value: number, largest: number) {
 
 function monthLabel(month: string) {
   return new Intl.DateTimeFormat("en-CA", { month: "long", year: "numeric" }).format(new Date(`${month}-01T12:00:00`));
+}
+
+function normalizeAccountKind(kind: AccountKind): AccountKind {
+  return kind === "credit" ? "credit-card" : kind;
+}
+
+function accountKindLabel(kind: AccountKind) {
+  if (kind === "crypto") return "Investment";
+  return accountKindOptions.find((item) => item.value === normalizeAccountKind(kind))?.label ?? "Account";
 }

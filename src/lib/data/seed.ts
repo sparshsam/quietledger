@@ -6,7 +6,7 @@ export const ledgerData: LedgerData = {
     { id: "savings", name: "Savings", kind: "savings", subtitle: "Emergency fund", balance: 8910.2, currency: "CAD" },
     { id: "cash", name: "Cash", kind: "cash", subtitle: "On hand", balance: 340, currency: "CAD" },
     { id: "crypto", name: "Crypto", kind: "crypto", subtitle: "Long term", balance: 1214.75, currency: "CAD" },
-    { id: "credit", name: "Credit cards", kind: "credit", subtitle: "2 accounts", balance: -1237.18, currency: "CAD" },
+    { id: "credit", name: "Credit cards", kind: "credit-card", subtitle: "2 accounts", balance: -1237.18, currency: "CAD" },
     { id: "loans", name: "Loans", kind: "loan", subtitle: "Student loan", balance: -12450, currency: "CAD" },
   ],
   monthlySnapshots: [

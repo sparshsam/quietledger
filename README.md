@@ -9,6 +9,8 @@ QuietLedger is a private, self-hostable personal finance tracker for calmly unde
 - Calm dark dashboard with paper-ledger surfaces.
 - Local seed data for accounts, monthly snapshots, categorization patterns, financial memory, forecast items, life-cost timeline, notes, and transactions.
 - Browser-only interactions for selecting accounts, months, insights, memories, and local/privacy status.
+- Manual transaction entry with edit, duplicate, and delete actions.
+- Account management for creating, editing, and archiving local accounts.
 - Client-side CSV import with flexible column mapping, preview warnings, duplicate detection, and basic categorization.
 - Local browser persistence with schema-versioned `localStorage`, last-saved status, JSON backup restore, reset, and clear controls.
 - Plain JSON export with `schemaVersion`, `exportedAt`, `accounts`, `transactions`, `importedTransactions`, `importMetadata`, `monthlySnapshots`, `memories`, and `forecastItems`.
@@ -72,6 +74,25 @@ Data controls in the app:
 - **Import JSON backup** restores a saved QuietLedger export.
 - **Reset demo** replaces the local ledger with the demo data after confirmation.
 - **Clear local data** removes the saved browser ledger after confirmation, then shows the demo fallback.
+
+## Manual Ledger Editing
+
+QuietLedger supports manual transaction entry for people who want to keep a small ledger without importing a full bank file. Manual transactions include date, description, merchant, amount, income/expense direction, account, category, and notes. They can be edited, duplicated, or deleted from the transaction table. Delete actions ask for confirmation first.
+
+Accounts can be created, edited, and archived locally. Account types include cash, chequing, savings, credit card, loan, investment, and other. The starting balance is stored on the account, while CSV and manual transactions adjust the displayed account balance.
+
+Archived accounts are hidden from the main active account list but remain in the exported ledger so historical transactions still make sense.
+
+## Screenshots Checklist
+
+Before sharing UI changes, check these views:
+
+- Desktop overview at `1440x1000`.
+- Mobile overview around `390x900`.
+- Manual transaction form with validation error.
+- Account management after adding and archiving an account.
+- Recent transactions after edit, duplicate, and delete actions.
+- Local data panel after JSON export/import or reset.
 
 ## Tech
 

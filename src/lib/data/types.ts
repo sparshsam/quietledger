@@ -1,4 +1,4 @@
-export type AccountKind = "chequing" | "savings" | "cash" | "crypto" | "credit" | "loan";
+export type AccountKind = "cash" | "chequing" | "savings" | "credit-card" | "loan" | "investment" | "other" | "crypto" | "credit";
 
 export type Account = {
   id: string;
@@ -7,6 +7,7 @@ export type Account = {
   subtitle: string;
   balance: number;
   currency: "CAD";
+  archivedAt?: string;
 };
 
 export type Transaction = {
@@ -18,7 +19,7 @@ export type Transaction = {
   accountId: string;
   amount: number;
   note?: string;
-  source?: "demo" | "csv";
+  source?: "demo" | "csv" | "manual";
   importId?: string;
 };
 
