@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: >-
+  If you use QuietLedger in research or publications, please cite
+  this repository.
+title: QuietLedger
+abstract: >-
+  A private, self-hostable personal finance tracker for calmly
+  understanding where your life energy is going. Local-first MVP
+  with no bank connection, no brokerage features, no shame
+  language, and no engagement tricks.
+authors:
+  - family-names: Agarwal
+    given-names: Sparsh
+    orcid: ''
+license: AGPL-3.0-or-later
+repository-code: 'https://github.com/sparshagarwal/quietledger'
+keywords:
+  - personal-finance
+  - ledger
+  - local-first
+  - privacy
+  - pwa
+  - nextjs
+type: software

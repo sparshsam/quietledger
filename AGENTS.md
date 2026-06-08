@@ -1,5 +1,17 @@
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
+# QuietLedger — AI Agent Instructions
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
+## Product Identity
+
+QuietLedger is a private, local-first finance tool. This is NOT a fintech platform — it is a personal budgeting application with no backend, no accounts, and no cloud dependency.
+
+## Rules
+
+1. **Local-first.** Do not add backend services, authentication, or cloud sync.
+2. **No tracking.** No analytics, no telemetry, no third-party scripts.
+3. **Privacy.** All data stays on the user's device.
+4. **Calm UX.** Avoid financial gamification, urgency patterns, or manipulative UI.
+5. **Branch naming:** \`feat/*\`, \`fix/*\`, \`docs/*\`, \`refactor/*\`, \`chore/*\`.
+
+## Ecosystem Standards
+
+All ecosystem repos follow: https://github.com/sparshsam/ecosystem-standards
