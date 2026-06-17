@@ -29,7 +29,9 @@ It runs in the browser, stores the active ledger locally, supports CSV import an
 
 ## Current Status
 
-QuietLedger is an early public MVP. It is useful today as a browser-local ledger, but it is not a bank-connected finance platform and should not be treated as secure long-term storage for sensitive records.
+**Maturity:** Maintained. v0.1.0 — early public MVP with active development. Releases, changelog, and issue tracking are active.
+
+QuietLedger is a **maintained early public MVP**. It is useful today as a browser-local ledger, but it is not a bank-connected finance platform and should not be treated as secure long-term storage for sensitive records.
 
 What exists now:
 
