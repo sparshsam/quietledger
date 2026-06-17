@@ -13,7 +13,7 @@ authors:
     given-names: Sparsh
     orcid: ''
 license: AGPL-3.0-or-later
-repository-code: 'https://github.com/sparshagarwal/quietledger'
+repository-code: 'https://github.com/sparshsam/quietledger'
 keywords:
   - personal-finance
   - ledger

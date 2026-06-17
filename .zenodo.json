@@ -1,0 +1,23 @@
+{
+  "creators": [
+    {
+      "affiliation": "",
+      "name": "Agarwal, Sparsh",
+      "orcid": ""
+    }
+  ],
+  "description": "A private, local-first personal finance ledger for calmly understanding where your life energy is going. Local-first MVP with no bank connection, no brokerage features, no shame language, and no engagement tricks.",
+  "keywords": [
+    "personal-finance",
+    "ledger",
+    "local-first",
+    "privacy",
+    "pwa",
+    "nextjs"
+  ],
+  "license": "AGPL-3.0-or-later",
+  "publication_date": "2026-06-15",
+  "title": "QuietLedger",
+  "upload_type": "software",
+  "access_right": "open"
+}
