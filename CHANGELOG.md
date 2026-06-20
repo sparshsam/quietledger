@@ -2,6 +2,16 @@
 
 All notable changes to OpenLedger will be documented here.
 
+## 0.4.0 — 2026-06-19
+
+- Redesigned dashboard with financial summary cards (income, expenses, net cash flow, net worth).
+- Added SVG charts: spending by category, income vs expenses, account balance distribution, monthly trend.
+- Improved transactions view with search, date range filter, account/category/type filters, and sortable columns.
+- Added insights panel: largest expense this month, top spending category, month-over-month change, possible recurring transactions, low balance warnings.
+- Added empty states for accounts, transactions, charts, guest mode guidance, and cloud backup guidance.
+- Built finance engine helpers (totals, grouping, insights, trends) with unit tests.
+- All computations are local derivations from in-memory state. No changes to persistence, backup, auth, or storage keys.
+
 ## 0.3.0 — 2026-06-20
 
 - Added manual cloud backup and restore for signed-in users.

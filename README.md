@@ -29,12 +29,18 @@ It runs in the browser, stores the active ledger locally, supports CSV import an
 
 ## Current Status
 
-**Maturity:** Maintained. v0.3.0 — optional cloud backup and manual restore; guest mode remains default.
+**Maturity:** Maintained. v0.4.0 — dashboard with financial insights and improved transaction view; guest mode remains default.
 
 OpenLedger is a **maintained early public MVP**. It is useful today as a browser-local ledger, but it is not a bank-connected finance platform and should not be treated as secure long-term storage for sensitive records.
 
 What exists now:
 
+- Redesigned dashboard with financial summary cards (income, expenses, net cash flow, net worth).
+- SVG charts: spending by category, income vs expenses, account balance distribution, monthly trend.
+- Improved transactions view with search, date range filter, account/category/type filters, and sortable columns.
+- Insights panel: largest expense this month, top spending category, month-over-month change, possible recurring transactions, low balance warnings.
+- Empty states for accounts, transactions, charts, guest mode guidance, and cloud backup guidance.
+- Finance engine helpers (totals, grouping, insights, trends) with unit tests.
 - Manual transaction entry with edit, duplicate, and delete actions.
 - Local account management with create, edit, and archive flows.
 - Client-side CSV import with flexible column mapping, preview warnings, duplicate detection, and basic categorization.

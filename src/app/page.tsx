@@ -61,6 +61,14 @@ import {
 import { ledgerData } from "@/lib/data/seed";
 import type { Account, AccountKind, CategoryPattern, ImportMetadata, LifeCostEvent, MonthlySnapshot, Transaction } from "@/lib/data/types";
 import { PwaRegister } from "@/components/pwa-register";
+import { SpendingByCategoryChart, IncomeVsExpensesChart, AccountBalancesChart, MonthlyTrendChart } from "@/components/charts";
+import { DashboardSummary } from "@/components/dashboard-summary";
+import { InsightsPanel } from "@/components/insights-panel";
+import { TransactionsView } from "@/components/transactions-view";
+import { GuestModeGuidance, CloudBackupGuidance, NoChartData } from "@/components/empty-states";
+import { categoryTotals } from "@/lib/finance/grouping";
+import { monthlyTrend } from "@/lib/finance/trends";
+import { accountEffectiveBalance } from "@/lib/finance/totals";
 
 const currency = new Intl.NumberFormat("en-CA", {
   style: "currency",
@@ -68,7 +76,8 @@ const currency = new Intl.NumberFormat("en-CA", {
 });
 
 const navItems = [
-  { label: "Overview", icon: LayoutDashboard },
+  { label: "Dashboard", icon: LayoutDashboard },
+  { label: "Overview", icon: Archive },
   { label: "Accounts", icon: WalletCards },
   { label: "Transactions", icon: ReceiptText },
   { label: "Memory", icon: Archive },
@@ -192,6 +201,20 @@ export default function Home() {
   const nextSaveNoticeRef = useRef<string | null>(null);
 
   const importedTransactions = transactions.filter((transaction) => transaction.source === "csv");
+  const trendData = useMemo(() => monthlyTrend(transactions), [transactions]);
+  const categoryData = useMemo(() => categoryTotals(transactions), [transactions]);
+  const incomeVsExpenseData = useMemo(
+    () => trendData.map((d) => ({
+      label: new Intl.DateTimeFormat("en-CA", { month: "short", year: "2-digit" }).format(new Date(`${d.month}-01T12:00:00`)),
+      income: d.income,
+      expense: d.expense,
+    })),
+    [trendData],
+  );
+  const effectiveBalances = useMemo(
+    () => accounts.map((a) => ({ ...a, balance: accountEffectiveBalance(a, transactions) })),
+    [accounts, transactions],
+  );
   const currentLedgerData = { ...ledgerData, accounts, transactions, monthlySnapshots, memories, forecastItems, importMetadata };
   const activeAccounts = accounts.filter((account) => !account.archivedAt);
   const accountsWithBalances = useMemo(
@@ -593,6 +616,55 @@ export default function Home() {
           </header>
 
           <div className="dashboard-grid">
+            {activeNav === "Dashboard" ? (
+              <div className="dashboard-page">
+                <GuestModeGuidance />
+                <section className="dashboard-section">
+                  <h2 className="section-title">Financial Summary</h2>
+                  <DashboardSummary accounts={accounts} transactions={transactions} />
+                </section>
+
+                <section className="dashboard-section chart-section">
+                  <h2 className="section-title">Spending by Category</h2>
+                  {transactions.length > 0
+                    ? <SpendingByCategoryChart data={categoryData} />
+                    : <NoChartData message="No transaction data for category breakdown yet." />}
+                </section>
+
+                <section className="dashboard-section chart-section">
+                  <h2 className="section-title">Income vs Expenses</h2>
+                  {trendData.length > 0
+                    ? <IncomeVsExpensesChart data={incomeVsExpenseData} />
+                    : <NoChartData message="No transaction data for income vs expenses yet." />}
+                </section>
+
+                <section className="dashboard-section chart-section">
+                  <h2 className="section-title">Account Balances</h2>
+                  {accounts.filter((a) => !a.archivedAt).length > 0
+                    ? <AccountBalancesChart accounts={effectiveBalances} />
+                    : <NoChartData message="No accounts yet." />}
+                </section>
+
+                <section className="dashboard-section chart-section">
+                  <h2 className="section-title">Monthly Trend</h2>
+                  {trendData.length > 1
+                    ? <MonthlyTrendChart data={trendData} />
+                    : <NoChartData message="Need at least 2 months of data for a trend." />}
+                </section>
+
+                <section className="dashboard-section insights-section">
+                  <h2 className="section-title">Insights</h2>
+                  <InsightsPanel accounts={accounts} transactions={transactions} />
+                </section>
+
+                <section className="dashboard-section transactions-section-wide">
+                  <h2 className="section-title">Transactions</h2>
+                  <TransactionsView transactions={transactions} accounts={accounts} />
+                </section>
+                {authMode === "signed-in" ? <CloudBackupGuidance /> : null}
+              </div>
+            ) : (
+              <>
             <Panel className="accounts-panel" title="Accounts" action="View all accounts">
               <div className="account-list">
                 {visibleAccountsWithBalances.map((account) => (
@@ -908,6 +980,8 @@ export default function Home() {
                 <Note date="Apr 10" text="Looking at switching internet plan next month." />
               </div>
             </Panel>
+            </>)
+          }
           </div>
 
           <section className="selection-strip" aria-label="Selected local context">

@@ -35,6 +35,19 @@ CSV parsing and JSON backup restore run in the browser. OpenLedger does not requ
 
 Future sync should remain opt-in and self-hostable. Supabase/Postgres can replace the persistence boundary later without changing the dashboard's core data shape.
 
+## Finance Engine (v0.4.0)
+
+Computation helpers live in `src/lib/finance/`. All functions are pure derivations from in-memory state — no side effects, no persistence changes.
+
+| Module | Purpose |
+|--------|---------|
+| `totals.ts` | Income, expense, net cash flow, net worth, effective account balance |
+| `grouping.ts` | Group transactions by category, month, or account; category/monthly totals |
+| `insights.ts` | Largest expense, top category, month-over-month change, recurring detection, low balance alerts |
+| `trends.ts` | Monthly trend series (income, expense, net per month) |
+
+All finance functions are tested under `src/lib/finance/__tests__/` (28 tests across 4 test files).
+
 ## Supabase Foundation (v0.1.1)
 
 A Supabase backend schema has been prepared on the shared Elora Supabase project for optional future sync. All OpenLedger tables use the `openledger_` prefix to namespace them within the shared project.
