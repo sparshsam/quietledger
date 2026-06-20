@@ -29,7 +29,7 @@ It runs in the browser, stores the active ledger locally, supports CSV import an
 
 ## Current Status
 
-**Maturity:** Maintained. v0.2.0 — optional auth foundation; guest mode remains default.
+**Maturity:** Maintained. v0.3.0 — optional cloud backup and manual restore; guest mode remains default.
 
 OpenLedger is a **maintained early public MVP**. It is useful today as a browser-local ledger, but it is not a bank-connected finance platform and should not be treated as secure long-term storage for sensitive records.
 

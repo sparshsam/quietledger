@@ -2,6 +2,15 @@
 
 All notable changes to OpenLedger will be documented here.
 
+## 0.3.0 — 2026-06-20
+
+- Added manual cloud backup and restore for signed-in users.
+- Created `openledger_backups` table with RLS (users can only access own backups).
+- Added Cloud Backup panel with back up, restore preview, and delete actions.
+- Restore requires confirmation before replacing local data.
+- Updated docs to explain manual backup model and local-first philosophy.
+- App remains fully local-first. No automatic sync, no background jobs.
+
 ## 0.2.0 — 2026-06-20
 
 - Added optional Supabase Auth foundation (email OTP + Google OAuth).
