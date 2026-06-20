@@ -1568,3 +1568,354 @@ select {
   border-color: var(--amber);
   font-weight: 600;
 }
+
+/* ── Dashboard page ── */
+.dashboard-page {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 18px;
+}
+
+.dashboard-section {
+  grid-column: 1 / -1;
+}
+
+.dashboard-section .section-title {
+  margin: 0 0 10px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.chart-section,
+.insights-section {
+  grid-column: span 2;
+}
+
+.transactions-section-wide {
+  grid-column: 1 / -1;
+}
+
+/* ── Summary cards ── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--line-dark);
+  border-radius: 6px;
+  background: var(--graphite-2);
+  padding: 16px;
+}
+
+.summary-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.summary-card strong {
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-card .positive { color: var(--sage); }
+.summary-card .negative { color: var(--amber); }
+.summary-card .neutral  { color: var(--ink); }
+
+/* ── Charts ── */
+.chart {
+  display: grid;
+  gap: 8px;
+}
+
+.chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  gap: 8px;
+  color: var(--muted-dark);
+  text-align: center;
+  font-size: 13px;
+}
+
+.chart-bar-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 72px;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.chart-label {
+  color: var(--muted-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chart-bar-track {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--line-dark);
+}
+
+.chart-bar-track-sm {
+  height: 8px;
+}
+
+.chart-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 300ms ease;
+}
+
+.chart-bar-income {
+  background: var(--sage);
+}
+
+.chart-bar-expense {
+  background: var(--amber);
+}
+
+.chart-value {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.chart-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.chart-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.legend-income { background: var(--sage); }
+.legend-expense { background: var(--amber); }
+
+/* ── Insights panel ── */
+.insights-panel-body {
+  display: grid;
+  gap: 10px;
+}
+
+.insights-empty {
+  color: var(--muted-dark);
+  font-size: 13px;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.insight-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border: 1px solid var(--line-dark);
+  border-radius: 6px;
+  background: var(--graphite-2);
+  padding: 12px;
+}
+
+.insight-card strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 560;
+  margin-bottom: 2px;
+}
+
+.insight-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.insight-icon-expense { color: var(--amber); flex-shrink: 0; margin-top: 2px; }
+.insight-icon-warn { color: var(--danger-soft); flex-shrink: 0; margin-top: 2px; }
+.insight-icon-save { color: var(--sage); flex-shrink: 0; margin-top: 2px; }
+.insight-icon-recur { color: var(--sage); flex-shrink: 0; margin-top: 2px; }
+
+/* ── Transactions view ── */
+.transactions-view {
+  display: grid;
+  gap: 10px;
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.filter-search {
+  display: flex;
+  flex: 1;
+  min-width: 200px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line-dark);
+  border-radius: 6px;
+  background: var(--graphite-2);
+  padding: 8px 12px;
+  color: var(--muted);
+}
+
+.filter-search input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  outline: none;
+}
+
+.filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filter-controls select,
+.filter-controls input[type="date"] {
+  border: 1px solid var(--line-dark);
+  border-radius: 6px;
+  background: var(--graphite-2);
+  color: var(--ink);
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.filter-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.clear-filters {
+  border: 0;
+  background: transparent;
+  color: var(--sage);
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.transaction-table-improved {
+  display: grid;
+  gap: 0;
+}
+
+.transaction-table-improved .table-head {
+  display: grid;
+  grid-template-columns: 100px 1fr 90px 100px 100px;
+  gap: 10px;
+  border-bottom: 1px solid var(--line-dark);
+  padding: 8px 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.sort-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 560;
+  padding: 0;
+  text-align: left;
+}
+
+.sort-header:hover {
+  color: var(--ink);
+}
+
+.transaction-table-improved .table-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 90px 100px 100px;
+  gap: 10px;
+  align-items: center;
+  border-bottom: 1px solid var(--line-dark);
+  padding: 10px 0;
+  font-size: 14px;
+}
+
+.transaction-table-improved .table-row strong {
+  font-weight: 560;
+}
+
+.transaction-table-improved .table-row small {
+  display: block;
+  color: var(--muted-dark);
+  font-size: 11px;
+  margin-top: 1px;
+}
+
+/* ── Empty states ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  gap: 8px;
+  color: var(--muted-dark);
+  text-align: center;
+  padding: 24px 16px;
+}
+
+.empty-state strong {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 13px;
+  max-width: 300px;
+}
+
+.guidance-banner {
+  flex-direction: row;
+  text-align: left;
+  justify-content: flex-start;
+  gap: 14px;
+  border: 1px solid var(--line-dark);
+  border-radius: 6px;
+  background: var(--rail);
+  min-height: auto;
+}
+
+.guidance-banner strong {
+  color: var(--ink);
+}
