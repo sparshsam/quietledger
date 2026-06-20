@@ -1459,3 +1459,112 @@ select {
   box-shadow: 0 0 4px var(--sage);
 }
 
+/* ── Cloud Backup panel ───────────────────── */
+.cloud-backup-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cloud-backup-guest {
+  padding: 4px 0;
+}
+
+.backup-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.backup-timestamp {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.backup-actions button {
+  font-size: 0.78rem;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--line-dark);
+  background: var(--rail);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.backup-actions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.backup-actions button.backup-btn {
+  background: var(--sage);
+  color: var(--graphite);
+  border-color: var(--sage);
+  font-weight: 600;
+}
+
+.backup-actions button.delete-btn {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.backup-actions button.restore-btn:hover {
+  background: var(--line-dark);
+}
+
+.backup-notice {
+  font-size: 0.8rem;
+  color: var(--sage);
+}
+
+.restore-confirm {
+  border: 1px solid var(--amber);
+  border-radius: 4px;
+  padding: 10px;
+  background: rgba(193, 136, 64, 0.06);
+}
+
+.restore-confirm h4 {
+  margin: 0 0 4px;
+  font-size: 0.85rem;
+  color: var(--amber);
+}
+
+.restore-confirm p {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+
+.restore-confirm ul {
+  font-size: 0.78rem;
+  color: var(--ink);
+  margin: 0 0 8px;
+  padding-left: 16px;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.confirm-actions button {
+  font-size: 0.78rem;
+  padding: 5px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--line-dark);
+  cursor: pointer;
+}
+
+.confirm-actions button:first-child {
+  background: var(--amber);
+  color: var(--graphite);
+  border-color: var(--amber);
+  font-weight: 600;
+}

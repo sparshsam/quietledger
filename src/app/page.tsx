@@ -38,6 +38,7 @@ import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth, getAuthMode } from "@/lib/supabase/auth-hook";
 import { AuthPanel } from "@/components/auth-panel";
+import { CloudBackupPanel } from "@/components/cloud-backup-panel";
 import {
   buildImportPreview,
   guessMapping,
@@ -365,6 +366,15 @@ export default function Home() {
     applyLedgerState(createDemoLedgerState());
     setLastSavedAt(null);
     setStorageNotice("Local browser data cleared. Demo fallback is showing.");
+  }
+
+  function handleRestoreFromCloud(payload: { accounts: unknown[]; transactions: unknown[] }) {
+    if (!window.confirm("Replace local ledger with cloud backup? Current local changes will be lost.")) return;
+    // Apply cloud data to local state
+    if (payload.accounts.length > 0) setAccounts(payload.accounts as typeof ledgerData.accounts);
+    if (payload.transactions.length > 0) setTransactions(payload.transactions as typeof ledgerData.transactions);
+    skipNextSaveCountRef.current = 1;
+    nextSaveNoticeRef.current = "Local data restored from cloud backup.";
   }
 
   function saveManualTransaction() {
@@ -815,6 +825,25 @@ export default function Home() {
             >
               <AuthPanel user={user} profile={profile} onSignOut={() => {}} />
             </Panel>
+
+            {authMode === "signed-in" ? (
+              <Panel
+                title="Cloud Backup"
+                className="backup-panel"
+                control={
+                  <span className="privacy-chip">
+                    <ShieldCheck size={14} aria-hidden />
+                    Manual sync
+                  </span>
+                }
+              >
+                <CloudBackupPanel
+                  user={user}
+                  ledgerData={{ accounts, transactions }}
+                  onRestore={handleRestoreFromCloud}
+                />
+              </Panel>
+            ) : null}
 
             <Panel
               title="CSV import"

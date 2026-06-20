@@ -1,6 +1,6 @@
 {
   "name": "openledger",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A private, local-first personal finance ledger for calm CSV-based tracking.",
   "private": true,
   "license": "AGPL-3.0-or-later",
