@@ -884,36 +884,27 @@ export default function Home() {
   );
 
   function TransactionTable({ selectedAccount }: { selectedAccount: Account }) {
-    const rows = transactionsForAccount.length > 0 ? transactionsForAccount : transactions.slice(0, 5);
-
+    const rows = transactionsForAccount.length > 0 ? transactionsForAccount : transactions.slice(0, 20);
+    if (rows.length === 0) return null;
     return (
-      <div className="transaction-table">
-        <div className="table-head">
-          <span>Date</span>
-          <span>Description</span>
-          <span>Category</span>
-          <span>Account</span>
-          <span>Amount</span>
-          <span>Actions</span>
-        </div>
+      <div className="tx-table">
         {rows.map((transaction) => (
-          <div className="table-row" key={transaction.id}>
-            <span>{formatDate(transaction.date)}</span>
-            <strong>{transaction.description}</strong>
-            <span>{transaction.category}</span>
-            <span>{accountsWithBalances.find((account) => account.id === transaction.accountId)?.name ?? selectedAccount.name}</span>
-            <em className={transaction.amount < 0 ? "negative" : "positive"}>{currency.format(transaction.amount)}</em>
-            <span className="row-actions">
-              <button onClick={() => editTransaction(transaction)} aria-label={`Edit ${transaction.description}`}>
-                <Pencil size={14} aria-hidden />
-              </button>
-              <button onClick={() => duplicateTransaction(transaction)} aria-label={`Duplicate ${transaction.description}`}>
-                <Copy size={14} aria-hidden />
-              </button>
-              <button onClick={() => deleteTransaction(transaction)} aria-label={`Delete ${transaction.description}`}>
-                <Trash2 size={14} aria-hidden />
-              </button>
-            </span>
+          <div className="tx-row" key={transaction.id}>
+            <div className="tx-icon"><ReceiptText size={18} aria-hidden /></div>
+            <div className="tx-info">
+              <div className="tx-desc">{transaction.description}</div>
+              <div className="tx-meta">
+                <span>{formatDate(transaction.date)}</span> <span>. </span>
+                <span>{transaction.category}</span> <span>. </span>
+                <span>{accountsWithBalances.find((a) => a.id === transaction.accountId)?.name ?? selectedAccount.name}</span>
+              </div>
+            </div>
+            <div className="tx-actions">
+              <button onClick={() => editTransaction(transaction)} aria-label={"Edit " + transaction.description} className="tx-action-btn" title="Edit"><Pencil size={15} /></button>
+              <button onClick={() => duplicateTransaction(transaction)} aria-label={"Duplicate " + transaction.description} className="tx-action-btn" title="Duplicate"><Copy size={15} /></button>
+              <button onClick={() => deleteTransaction(transaction)} aria-label={"Delete " + transaction.description} className="tx-action-btn danger" title="Delete"><Trash2 size={15} /></button>
+            </div>
+            <span className={"recent-amount " + (transaction.amount > 0 ? "positive" : "negative")} style={{ textAlign: "right", minWidth: 90 }}>{currency.format(transaction.amount)}</span>
           </div>
         ))}
       </div>
@@ -921,34 +912,90 @@ export default function Home() {
   }
 }
 
-function Panel({
-  title,
-  action,
-  control,
-  className = "",
-  children,
-}: {
-  title: string;
-  action?: string;
-  control?: React.ReactNode;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className={`panel ${className}`}>
-      <header className="panel-header">
-        <h2>{title}</h2>
-        {control}
-      </header>
-      <div className="panel-body">{children}</div>
-      {action ? (
-        <button className="panel-action">
-          {action}
-          <ArrowRight size={14} aria-hidden />
-        </button>
-      ) : null}
-    </section>
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en-CA", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(`${value}T12:00:00`));
+}
+
+function formatTime(value: string) {
+  return new Intl.DateTimeFormat("en-CA", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function buildMonthOptions(transactions: typeof ledgerData.transactions, snapshots: MonthlySnapshot[]) {
+  const known = new Map(snapshots.map((snapshot) => [snapshot.month, snapshot.label]));
+  transactions.forEach((transaction) => {
+    const month = transaction.date.slice(0, 7);
+    if (!known.has(month)) known.set(month, monthLabel(month));
+  });
+
+  return [...known.entries()]
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([value, label]) => ({ value, label }));
+}
+
+function buildSnapshot(month: string, transactions: typeof ledgerData.transactions, fallback: MonthlySnapshot): MonthlySnapshot {
+  const monthTransactions = transactions.filter((transaction) => transaction.date.startsWith(month));
+  if (
+    monthTransactions.length === 0 ||
+    !monthTransactions.some((transaction) => transaction.source === "csv" || transaction.source === "manual")
+  ) {
+    return fallback;
+  }
+
+  const income = sumWhere(monthTransactions, (transaction) => transaction.amount > 0);
+  const essential = sumWhere(monthTransactions, (transaction) =>
+    ["Groceries", "Rent", "Utilities", "Transport", "Health"].includes(transaction.category),
   );
+  const optional = sumWhere(monthTransactions, (transaction) =>
+    transaction.amount < 0 && ["Food delivery", "Shopping", "Misc", "Food & Drink"].includes(transaction.category),
+  );
+  const recurring = sumWhere(monthTransactions, (transaction) =>
+    ["Subscriptions", "Rent", "Utilities"].includes(transaction.category),
+  );
+  const debt = sumWhere(monthTransactions, (transaction) => transaction.category === "Debt");
+  const savingsMovement = income + essential + optional + recurring + debt;
+  const largest = Math.max(1, ...[income, essential, optional, recurring, savingsMovement, debt].map((value) => Math.abs(value)));
+
+  return {
+    month,
+    label: monthLabel(month),
+    daysLeft: fallback.month === month ? fallback.daysLeft : 0,
+    metrics: [
+      { id: "income", label: "Income", amount: income, ratio: ratio(income, largest), tone: "sage" },
+      { id: "essential", label: "Essential spending", amount: essential, ratio: ratio(essential, largest), tone: "quiet" },
+      { id: "optional", label: "Optional spending", amount: optional, ratio: ratio(optional, largest), tone: "quiet" },
+      { id: "recurring", label: "Recurring obligations", amount: recurring, ratio: ratio(recurring, largest), tone: "quiet" },
+      { id: "savings", label: "Savings movement", amount: savingsMovement, ratio: ratio(savingsMovement, largest), tone: "sage" },
+      { id: "debt", label: "Debt progress", amount: debt, ratio: ratio(debt, largest), tone: "amber" },
+    ],
+  };
+}
+
+function sumWhere(transactions: typeof ledgerData.transactions, predicate: (transaction: typeof ledgerData.transactions[number]) => boolean) {
+  return transactions.filter(predicate).reduce((total, transaction) => total + transaction.amount, 0);
+}
+
+function ratio(value: number, largest: number) {
+  return Math.max(0.18, Math.min(1, Math.abs(value) / largest));
+}
+
+function monthLabel(month: string) {
+  return new Intl.DateTimeFormat("en-CA", { month: "long", year: "numeric" }).format(new Date(`${month}-01T12:00:00`));
+}
+
+function normalizeAccountKind(kind: AccountKind): AccountKind {
+  return kind === "credit" ? "credit-card" : kind;
+}
+
+function accountKindLabel(kind: AccountKind) {
+  if (kind === "crypto") return "Investment";
+  return accountKindOptions.find((item) => item.value === normalizeAccountKind(kind))?.label ?? "Account";
 }
 
 function CsvImportPreview({
@@ -1062,6 +1109,8 @@ function CsvImportPreview({
   );
 }
 
+
+
 function ManualTransactionForm({
   values,
   accounts,
@@ -1140,6 +1189,8 @@ function ManualTransactionForm({
     </div>
   );
 }
+
+
 
 function AccountManagement({
   values,
@@ -1225,178 +1276,4 @@ function AccountManagement({
   );
 }
 
-function AccountRow({ account, selected, onSelect }: { account: Account; selected: boolean; onSelect: () => void }) {
-  const Icon = accountIcons[account.kind];
 
-  return (
-    <button className={selected ? "account-row selected" : "account-row"} onClick={onSelect}>
-      <span className="line-icon">
-        <Icon size={17} aria-hidden />
-      </span>
-      <span>
-        <strong>{account.name}</strong>
-        <small>{account.subtitle}</small>
-      </span>
-      <em className={account.balance < 0 ? "negative" : "positive"}>{currency.format(account.balance)}</em>
-    </button>
-  );
-}
-
-function PatternButton({
-  pattern,
-  selected,
-  onSelect,
-}: {
-  pattern: CategoryPattern;
-  selected: boolean;
-  onSelect: () => void;
-}) {
-  return (
-    <button className={selected ? `insight-row ${pattern.tone} selected` : `insight-row ${pattern.tone}`} onClick={onSelect}>
-      <span className="insight-icon">
-        <Tag size={18} aria-hidden />
-      </span>
-      <span>
-        <strong>{pattern.title}</strong>
-        <small>{pattern.delta}</small>
-      </span>
-      <ChevronRight size={17} aria-hidden />
-    </button>
-  );
-}
-
-function LifeCostMap({ events }: { events: LifeCostEvent[] }) {
-  return (
-    <div className="life-map">
-      <div className="map-months">
-        {events.map((event) => (
-          <span key={`${event.id}-month`}>{event.month}</span>
-        ))}
-      </div>
-      <div className="map-line">
-        {events.map((event) => (
-          <span key={`${event.id}-dot`} className={event.kind} />
-        ))}
-      </div>
-      <div className="map-labels">
-        {events.map((event) => (
-          <div key={event.id}>
-            <strong>{event.label}</strong>
-            <span>{event.date}</span>
-          </div>
-        ))}
-      </div>
-      <div className="map-legend">
-        <span><i className="income" />Income</span>
-        <span><i className="large-expense" />Large expense</span>
-        <span><i className="recurring" />Recurring</span>
-      </div>
-    </div>
-  );
-}
-
-function Note({ date, text }: { date: string; text: string }) {
-  return (
-    <div className="note-row">
-      <span>{date}</span>
-      <p>{text}</p>
-      <FileText size={16} aria-hidden />
-    </div>
-  );
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-CA", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(`${value}T12:00:00`));
-}
-
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("en-CA", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function formatTime(value: string) {
-  return new Intl.DateTimeFormat("en-CA", {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function buildMonthOptions(transactions: typeof ledgerData.transactions, snapshots: MonthlySnapshot[]) {
-  const known = new Map(snapshots.map((snapshot) => [snapshot.month, snapshot.label]));
-  transactions.forEach((transaction) => {
-    const month = transaction.date.slice(0, 7);
-    if (!known.has(month)) known.set(month, monthLabel(month));
-  });
-
-  return [...known.entries()]
-    .sort(([a], [b]) => b.localeCompare(a))
-    .map(([value, label]) => ({ value, label }));
-}
-
-function buildSnapshot(month: string, transactions: typeof ledgerData.transactions, fallback: MonthlySnapshot): MonthlySnapshot {
-  const monthTransactions = transactions.filter((transaction) => transaction.date.startsWith(month));
-  if (
-    monthTransactions.length === 0 ||
-    !monthTransactions.some((transaction) => transaction.source === "csv" || transaction.source === "manual")
-  ) {
-    return fallback;
-  }
-
-  const income = sumWhere(monthTransactions, (transaction) => transaction.amount > 0);
-  const essential = sumWhere(monthTransactions, (transaction) =>
-    ["Groceries", "Rent", "Utilities", "Transport", "Health"].includes(transaction.category),
-  );
-  const optional = sumWhere(monthTransactions, (transaction) =>
-    transaction.amount < 0 && ["Food delivery", "Shopping", "Misc", "Food & Drink"].includes(transaction.category),
-  );
-  const recurring = sumWhere(monthTransactions, (transaction) =>
-    ["Subscriptions", "Rent", "Utilities"].includes(transaction.category),
-  );
-  const debt = sumWhere(monthTransactions, (transaction) => transaction.category === "Debt");
-  const savingsMovement = income + essential + optional + recurring + debt;
-  const largest = Math.max(1, ...[income, essential, optional, recurring, savingsMovement, debt].map((value) => Math.abs(value)));
-
-  return {
-    month,
-    label: monthLabel(month),
-    daysLeft: fallback.month === month ? fallback.daysLeft : 0,
-    metrics: [
-      { id: "income", label: "Income", amount: income, ratio: ratio(income, largest), tone: "sage" },
-      { id: "essential", label: "Essential spending", amount: essential, ratio: ratio(essential, largest), tone: "quiet" },
-      { id: "optional", label: "Optional spending", amount: optional, ratio: ratio(optional, largest), tone: "quiet" },
-      { id: "recurring", label: "Recurring obligations", amount: recurring, ratio: ratio(recurring, largest), tone: "quiet" },
-      { id: "savings", label: "Savings movement", amount: savingsMovement, ratio: ratio(savingsMovement, largest), tone: "sage" },
-      { id: "debt", label: "Debt progress", amount: debt, ratio: ratio(debt, largest), tone: "amber" },
-    ],
-  };
-}
-
-function sumWhere(transactions: typeof ledgerData.transactions, predicate: (transaction: typeof ledgerData.transactions[number]) => boolean) {
-  return transactions.filter(predicate).reduce((total, transaction) => total + transaction.amount, 0);
-}
-
-function ratio(value: number, largest: number) {
-  return Math.max(0.18, Math.min(1, Math.abs(value) / largest));
-}
-
-function monthLabel(month: string) {
-  return new Intl.DateTimeFormat("en-CA", { month: "long", year: "numeric" }).format(new Date(`${month}-01T12:00:00`));
-}
-
-function normalizeAccountKind(kind: AccountKind): AccountKind {
-  return kind === "credit" ? "credit-card" : kind;
-}
-
-function accountKindLabel(kind: AccountKind) {
-  if (kind === "crypto") return "Investment";
-  return accountKindOptions.find((item) => item.value === normalizeAccountKind(kind))?.label ?? "Account";
-}
