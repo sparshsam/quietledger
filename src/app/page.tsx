@@ -5,15 +5,11 @@ import {
   ArrowRight,
   Banknote,
   CheckCircle2,
-  ChevronDown,
-  ChevronLeft,
   ChevronRight,
   CircleDollarSign,
-  Columns3,
   Copy,
   CreditCard,
   Download,
-  Eye,
   FileText,
   Landmark,
   Moon,
@@ -60,15 +56,11 @@ import { ledgerData } from "@/lib/data/seed";
 import { createScreenshotLedgerData } from "@/lib/data/screenshot-seed";
 import type { Account, AccountKind, Budget, CategoryPattern, Goal, ImportMetadata, LifeCostEvent, MonthlySnapshot, Transaction } from "@/lib/data/types";
 import { PwaRegister } from "@/components/pwa-register";
-import { DashboardSummary } from "@/components/dashboard-summary";
 import { TransactionsView } from "@/components/transactions-view";
 import { GuestModeGuidance, CloudBackupGuidance } from "@/components/empty-states";
 import { BudgetsPanel } from "@/components/budgets-panel";
 import { GoalsPanel } from "@/components/goals-panel";
 import { DataManagementPanel } from "@/components/data-management-panel";
-import { categoryTotals } from "@/lib/finance/grouping";
-import { monthlyTrend } from "@/lib/finance/trends";
-import { accountEffectiveBalance } from "@/lib/finance/totals";
 import { budgetUtilization, remainingBudget, isOverBudget } from "@/lib/finance/budgets";
 import { goalProgress } from "@/lib/finance/goals";
 
@@ -157,11 +149,8 @@ export default function Home() {
   const authMode = getAuthMode(user);
   const [activeTab, setActiveTab] = useState<Tab>("Home");
   const [selectedAccountId, setSelectedAccountId] = useState("chequing");
-  const [selectedPatternId, setSelectedPatternId] = useState("delivery");
-  const [selectedMemoryId, setSelectedMemoryId] = useState("feb-2026");
   const [selectedMonth, setSelectedMonth] = useState("2026-05");
   const [localOnly, setLocalOnly] = useState(true);
-  const [patternFilter, setPatternFilter] = useState("");
   const [accounts, setAccounts] = useState(ledgerData.accounts);
   const [transactions, setTransactions] = useState(ledgerData.transactions);
   const [monthlySnapshots, setMonthlySnapshots] = useState(ledgerData.monthlySnapshots);
@@ -203,20 +192,6 @@ export default function Home() {
   const nextSaveNoticeRef = useRef<string | null>(null);
 
   const importedTransactions = transactions.filter((transaction) => transaction.source === "csv");
-  const trendData = useMemo(() => monthlyTrend(transactions), [transactions]);
-  const categoryData = useMemo(() => categoryTotals(transactions), [transactions]);
-  const incomeVsExpenseData = useMemo(
-    () => trendData.map((d) => ({
-      label: new Intl.DateTimeFormat("en-CA", { month: "short", year: "2-digit" }).format(new Date(`${d.month}-01T12:00:00`)),
-      income: d.income,
-      expense: d.expense,
-    })),
-    [trendData],
-  );
-  const effectiveBalances = useMemo(
-    () => accounts.map((a) => ({ ...a, balance: accountEffectiveBalance(a, transactions) })),
-    [accounts, transactions],
-  );
   const currentLedgerData = { ...ledgerData, accounts, transactions, monthlySnapshots, memories, forecastItems, importMetadata, budgets, goals };
   const activeAccounts = accounts.filter((account) => !account.archivedAt);
   const accountsWithBalances = useMemo(
@@ -233,22 +208,10 @@ export default function Home() {
     [accounts, transactions],
   );
   const visibleAccountsWithBalances = accountsWithBalances.filter((account) => !account.archivedAt);
-  const monthOptions = useMemo(() => buildMonthOptions(transactions, monthlySnapshots), [monthlySnapshots, transactions]);
-
-  const fallbackSnapshot =
-    monthlySnapshots.find((item) => item.month === selectedMonth) ?? monthlySnapshots[0] ?? ledgerData.monthlySnapshots[0];
-  const snapshot = buildSnapshot(selectedMonth, transactions, fallbackSnapshot);
   const selectedAccount =
     visibleAccountsWithBalances.find((account) => account.id === selectedAccountId) ??
     visibleAccountsWithBalances[0] ??
     accountsWithBalances[0];
-  const selectedMemory = memories.find((memory) => memory.id === selectedMemoryId) ?? memories[0] ?? ledgerData.memories[0];
-  const filteredPatterns = ledgerData.patterns.filter((pattern) =>
-    `${pattern.title} ${pattern.detail} ${pattern.category}`.toLowerCase().includes(patternFilter.toLowerCase()),
-  );
-  const visiblePatterns = patternFilter ? filteredPatterns : filteredPatterns.slice(0, 2);
-  const selectedPattern =
-    ledgerData.patterns.find((pattern) => pattern.id === selectedPatternId) ?? ledgerData.patterns[0];
   const importPreview = useMemo(
     () =>
       parsedCsv
@@ -372,7 +335,6 @@ export default function Home() {
     setGoals(state.goals);
     setSelectedAccountId(state.accounts[0]?.id ?? "chequing");
     setSelectedMonth(state.monthlySnapshots[0]?.month ?? "2026-05");
-    setSelectedMemoryId(state.memories[0]?.id ?? "feb-2026");
   }
 
   const MAX_CSV_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
