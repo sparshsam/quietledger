@@ -79,11 +79,12 @@ export function GoalsPanel({
   return (
     <div>
       {/* Header row */}
+      <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>Track your saving milestones. Set a target, contribute regularly, and watch your progress grow.</p>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <h2 className="section-title" style={{ margin: 0 }}>Milestones</h2>
         <button className="pill pill-primary" onClick={() => { setForm({ name: "", targetAmount: "", currentAmount: "0", targetDate: "" }); setEditingId(null); setShowForm(true); setError(""); }}>
-          <Plus size={16} style={{ strokeWidth: 2.5, display: 'block' }} />
           New goal
+          <Plus size={16} style={{ strokeWidth: 2.5 }} />
         </button>
       </div>
 
@@ -99,7 +100,7 @@ export function GoalsPanel({
               <input className="ef-input" type="date" value={form.targetDate} onChange={(e) => setForm({ ...form, targetDate: e.target.value })} />
               {error ? <span className="ef-error">{error}</span> : null}
               <div className="ef-actions">
-                <button className="pill pill-primary" onClick={handleSave}>{editingId ? "Save" : "Create milestone"}</button>
+                <button className="pill pill-primary" onClick={handleSave}>{editingId ? "Save" : "Save"}</button>
                 <button className="pill pill-secondary" onClick={() => setShowForm(false)}>Cancel</button>
               </div>
             </div>
@@ -111,8 +112,7 @@ export function GoalsPanel({
       {goals.length === 0 ? (
         <div className="empty-state">
           <strong>No milestones yet</strong>
-          <p>Create one target worth working toward.</p>
-          <button className="pill pill-primary" style={{ marginTop: 12 }} onClick={() => { setShowForm(true); setError(""); }}>Create milestone</button>
+          <p>Tap "New goal" to create your first milestone.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

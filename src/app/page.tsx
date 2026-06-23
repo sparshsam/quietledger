@@ -737,14 +737,14 @@ export default function Home() {
         
         ) : activeTab === "Transactions" ? (
           <>
-            <div style={{ marginBottom: 'var(--space-3xl)' }}>
-              <TransactionsView transactions={transactions} accounts={accounts} />
-            </div>
-            <div style={{ marginBottom: 'var(--space-lg)' }}>
-              <button className="pill pill-primary" onClick={() => setShowTxForm(true)}>
-                + New entry
+            <div style={{ marginBottom: 'var(--space-lg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 className="section-title" style={{ margin: 0 }}>Ledger entries</h2>
+              <button className="pill pill-primary" onClick={() => setShowTxForm(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                New entry
+                <Plus size={16} style={{ strokeWidth: 2.5 }} />
               </button>
             </div>
+            <TransactionsView transactions={transactions} accounts={accounts} />
             {showTxForm && (
               <div className="sheet-overlay" onClick={() => setShowTxForm(false)}>
                 <div className="sheet" onClick={(e) => e.stopPropagation()}>
