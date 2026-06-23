@@ -633,13 +633,13 @@ export default function Home() {
 
             {/* Quick actions — pill row */}
             <div style={{ display: 'flex', gap: 'var(--space-sm)', marginBottom: 'var(--space-3xl)', flexWrap: 'wrap' }}>
-              <button className="pill pill-primary" onClick={() => setActiveTab("Transactions")}>
-                <Plus size={16} style={{ verticalAlign: 'middle', marginRight: 6 }} />
+              <button className="pill pill-primary" onClick={() => setActiveTab("Transactions")} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 Record transaction
+                <Plus size={16} style={{ strokeWidth: 2.5 }} />
               </button>
-              <button className="pill pill-secondary" onClick={() => downloadLedgerExport(currentLedgerData, importedTransactions, importMetadata)}>
-                <Download size={16} style={{ verticalAlign: 'middle', marginRight: 6 }} />
+              <button className="pill pill-secondary" onClick={() => downloadLedgerExport(currentLedgerData, importedTransactions, importMetadata)} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 Export ledger
+                <Download size={16} />
               </button>
             </div>
 
