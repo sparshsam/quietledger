@@ -95,7 +95,7 @@ button, .btn, .pill {
 @media (max-width: 600px) { .navbar-nav button, .navbar-nav a { font-size: 12px; padding: 6px 12px; } }
 
 /* ══ Main layout ══ */
-main { max-width: 1280px; margin: 0 auto; padding: var(--space-4xl) 0 var(--space-3xl); }
+main { max-width: 1280px; margin: 0 auto; padding: var(--space-4xl) 0 var(--space-3xl); width: 100%; }
 main > * { padding-left: var(--space-lg); padding-right: var(--space-lg); }
 main.narrow, .narrow { max-width: 720px; margin-inline: auto; width: 100%; padding-left: 0; padding-right: 0; }
 @media (max-width: 600px) { main { padding: var(--space-2xl) var(--space-md); } }
