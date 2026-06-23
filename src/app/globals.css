@@ -167,11 +167,11 @@ main.narrow { max-width: 720px; }
 .goal-card-actions button { padding: 6px 16px; font-size: 12px; }
 
 /* ══ Settings sections (expandable) ══ */
-.settings-section { margin-bottom: var(--space-lg); }
+.settings-section { margin-bottom: var(--space-lg); width: 100%; }
 .settings-section summary { font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-tertiary); cursor: pointer; padding: var(--space-md) 0; list-style: none; display: flex; align-items: center; gap: var(--space-sm); border-bottom: 1px solid var(--border); }
 .settings-section summary::-webkit-details-marker { display: none; }
 .settings-section summary:hover { color: var(--text); }
-.settings-section[open] summary { color: var(--text); border-bottom-color: transparent; }
+.settings-section[open] { width: 100%; } .settings-section[open] summary { color: var(--text); border-bottom-color: transparent; }
 .settings-section-content { padding: var(--space-md) 0; }
 
 /* ══ Sheet/modal overlay ══ */

@@ -757,12 +757,7 @@ export default function Home() {
                 </div>
               </div>
             )}
-            {transactions.length > 0 ? (
-              <div style={{ marginTop: 'var(--space-2xl)' }}>
-                <h2 className="section-title">All entries</h2>
-                <TransactionTable transactions={transactions} accountsWithBalances={accountsWithBalances} selectedAccount={selectedAccount} onEdit={editTransaction} onDuplicate={duplicateTransaction} onDelete={deleteTransaction} />
-              </div>
-            ) : null}
+
           </>
 
         
