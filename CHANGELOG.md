@@ -2,6 +2,16 @@
 
 All notable changes to OpenLedger will be documented here.
 
+## 0.9.0 — 2026-06-23
+
+- **Supabase Readiness** — Created 12 migration-managed tables on the shared Elora project.
+- **New tables:** `openledger_devices` (device registry for multi-device sync), `openledger_sync_events` (sync operation history), `openledger_receipts` (receipt/image attachment metadata).
+- **RLS hardening:** Added `WITH CHECK` to UPDATE policies on accounts, transactions, budgets, and goals — prevents user_id reassignment during updates.
+- **RLS modernization:** Replaced deprecated `auth.role()` with `TO authenticated` on categories.
+- **Database types:** Added `src/lib/supabase/database.types.ts` with typed interfaces for all 12 OpenLedger tables.
+- **docs/supabase-audit.md:** Updated with new tables, policies, and migration history.
+- All auth remains optional. Guest/local-first mode is unchanged.
+
 ## 0.5.0 — 2026-06-19
 
 - Added monthly category budgets with create, edit, delete, progress bars, and overspending warnings.

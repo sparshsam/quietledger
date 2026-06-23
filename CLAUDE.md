@@ -5,9 +5,10 @@
 OpenLedger is a private, local-first finance tool for everyday budgeting and records.
 Built with Next.js + TypeScript. Formerly QuietLedger.
 
-Current Release: v0.8.9 — Settings panel consistency + release QA (2026-06-23)
+Current Release: v0.9.0 — Supabase Readiness (2026-06-23)
 
 Releases:
+           v0.9.0 — Supabase Readiness, 3 new tables, RLS hardening, database types
            v0.8.9 — Settings panel consistency, release QA, CSS @import fix
            v0.8.8 — Goals button alignment fix
            v0.8.7 — Button label order (text before icon)
@@ -62,6 +63,8 @@ Releases:
 - Pill-shaped buttons with consistent text-then-icon ordering
 - Expandable settings with details/summary elements and consistent card-panel content areas
 - Finance engine (totals, grouping, insights, trends, budgets, goals) with 50 unit tests
+- Supabase database with 12 migration-managed tables (profiles, accounts, transactions, categories, budgets, goals, imports, audit_events, backups, devices, sync_events, receipts)
+- Typed Supabase client types in `src/lib/supabase/database.types.ts`
 
 ### Design System (OpenProof Playbook aligned)
 - Editorial layout, no dashboard cards, hierarchy via typography
