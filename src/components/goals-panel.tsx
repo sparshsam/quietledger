@@ -82,8 +82,8 @@ export function GoalsPanel({
       <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>Track your saving milestones. Set a target, contribute regularly, and watch your progress grow.</p>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <h2 className="section-title" style={{ margin: 0 }}>Milestones</h2>
-        <button className="pill pill-primary" onClick={() => { setForm({ name: "", targetAmount: "", currentAmount: "0", targetDate: "" }); setEditingId(null); setShowForm(true); setError(""); }}>
-          New goal
+        <button className="pill pill-primary" onClick={() => { setForm({ name: "", targetAmount: "", currentAmount: "0", targetDate: "" }); setEditingId(null); setShowForm(true); setError(""); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
+          New Goal
           <Plus size={16} style={{ strokeWidth: 2.5 }} />
         </button>
       </div>
