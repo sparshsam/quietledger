@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     default: "OpenLedger",
     template: "%s · OpenLedger",
   },
-  description: "Money without noise. A private, local-first finance tracker for real life.",
+  description: "A private, editorial personal finance ledger.",
   manifest: "/manifest.webmanifest",
   applicationName: "OpenLedger",
   authors: [{ name: "Sparsh Sam", url: "https://github.com/sparshsam" }],
@@ -29,6 +29,7 @@ export const metadata: Metadata = {
   keywords: [
     "OpenLedger",
     "personal finance",
+    "ledger",
     "budget tracker",
     "local-first",
     "privacy",
@@ -38,12 +39,11 @@ export const metadata: Metadata = {
     "PWA",
     "open source",
     "money management",
-    "envelope budgeting",
   ],
   appleWebApp: {
     title: "OpenLedger",
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
   },
   icons: {
     icon: [
@@ -53,34 +53,33 @@ export const metadata: Metadata = {
       { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
       { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
     ],
-  },
-  other: {
-    "apple-touch-icon": "/icons/apple-touch-icon.png",
-    "apple-touch-icon-152x152": "/icons/apple-touch-icon-152x152.png",
-    "apple-touch-icon-167x167": "/icons/apple-touch-icon-167x167.png",
-    "apple-touch-icon-180x180": "/icons/apple-touch-icon-180x180.png",
+    apple: [
+      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/icons/apple-touch-icon-152x152.png", sizes: "152x152", type: "image/png" },
+      { url: "/icons/apple-touch-icon-167x167.png", sizes: "167x167", type: "image/png" },
+      { url: "/icons/apple-touch-icon-180x180.png", sizes: "180x180", type: "image/png" },
+    ],
   },
   openGraph: {
     title: "OpenLedger",
-    description: "Money without noise. A private, local-first finance tracker for real life.",
+    description: "A private, editorial personal finance ledger.",
     url: "https://openledger-two.vercel.app",
     siteName: "OpenLedger",
     images: [
       {
-        url: "/screenshots/dashboard-desktop.png",
-        width: 1440,
-        height: 1000,
-        alt: "OpenLedger dashboard showing summary cards, charts, and a calm local-first finance interface.",
+        url: "/icons/icon-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "OpenLedger — a private, editorial personal finance ledger.",
       },
     ],
     locale: "en_CA",
     type: "website",
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: "OpenLedger",
-    description: "Money without noise. A private, local-first finance tracker for real life.",
-    images: ["/screenshots/dashboard-desktop.png"],
+    description: "A private, editorial personal finance ledger.",
   },
 };
 

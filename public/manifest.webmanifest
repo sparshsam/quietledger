@@ -1,14 +1,14 @@
 {
   "name": "OpenLedger",
   "short_name": "OpenLedger",
-  "description": "Money without noise. A private, local-first finance tracker for real life.",
+  "description": "A private, editorial personal finance ledger.",
   "categories": ["finance", "productivity", "utilities"],
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#10100e",
-  "theme_color": "#10100e",
+  "background_color": "#F5F0E8",
+  "theme_color": "#8B6534",
   "lang": "en-CA",
   "dir": "ltr",
   "icons": [
@@ -23,21 +23,5 @@
     { "src": "/icons/icon-384x384.png", "sizes": "384x384", "type": "image/png" },
     { "src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "/icons/icon-512x512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ],
-  "screenshots": [
-    {
-      "src": "/screenshots/dashboard-desktop.png",
-      "sizes": "1440x1000",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "OpenLedger desktop dashboard showing summary cards, charts, and transaction view"
-    },
-    {
-      "src": "/screenshots/dashboard-mobile.png",
-      "sizes": "390x900",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "OpenLedger mobile dashboard with navigation sidebar and financial overview"
-    }
   ]
 }
