@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Trash2, ArrowUp } from "lucide-react";
+import { Pencil, Trash2, ArrowUp, Plus } from "lucide-react";
 import type { Goal } from "@/lib/data/types";
 import { goalProgress } from "@/lib/finance/goals";
 
@@ -31,13 +31,9 @@ export function GoalsPanel({
   onDelete: (id: string) => void;
   onContribute: (id: string, amount: number) => void;
 }) {
-  const [form, setForm] = useState<GoalFormValues>({
-    name: "",
-    targetAmount: "",
-    currentAmount: "0",
-    targetDate: "",
-  });
+  const [form, setForm] = useState<GoalFormValues>({ name: "", targetAmount: "", currentAmount: "0", targetDate: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState("");
   const [contributeId, setContributeId] = useState<string | null>(null);
   const [contributeAmount, setContributeAmount] = useState("");
@@ -59,24 +55,14 @@ export function GoalsPanel({
     });
     setForm({ name: "", targetAmount: "", currentAmount: "0", targetDate: "" });
     setEditingId(null);
+    setShowForm(false);
     setError("");
   }
 
   function handleEdit(g: Goal) {
-    setForm({
-      id: g.id,
-      name: g.name,
-      targetAmount: String(g.targetAmount),
-      currentAmount: String(g.currentAmount),
-      targetDate: g.targetDate ?? "",
-    });
+    setForm({ id: g.id, name: g.name, targetAmount: String(g.targetAmount), currentAmount: String(g.currentAmount), targetDate: g.targetDate ?? "" });
     setEditingId(g.id);
-    setError("");
-  }
-
-  function handleCancel() {
-    setForm({ name: "", targetAmount: "", currentAmount: "0", targetDate: "" });
-    setEditingId(null);
+    setShowForm(true);
     setError("");
   }
 
@@ -91,108 +77,88 @@ export function GoalsPanel({
   const now = new Date();
 
   return (
-    <div className="goals-panel">
-      <div className="goal-form">
-        <h3 className="section-title">{editingId ? "Edit goal" : "New goal"}</h3>
-        <div className="goal-form-grid">
-          <label>
-            <span>Name</span>
-            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Emergency fund" maxLength={100} />
-          </label>
-          <label>
-            <span>Target amount</span>
-            <input type="number" min="0" step="0.01" value={form.targetAmount} onChange={(e) => setForm({ ...form, targetAmount: e.target.value })} placeholder="10000" />
-          </label>
-          <label>
-            <span>Current amount</span>
-            <input type="number" min="0" step="0.01" value={form.currentAmount} onChange={(e) => setForm({ ...form, currentAmount: e.target.value })} placeholder="0" />
-          </label>
-          <label>
-            <span>Target date (optional)</span>
-            <input type="date" value={form.targetDate} onChange={(e) => setForm({ ...form, targetDate: e.target.value })} />
-          </label>
-        </div>
-        {error ? <p className="gentle-error" role="status" aria-live="polite">{error}</p> : null}
-        <div className="form-actions">
-          <button onClick={handleSave}>
-            <Plus size={16} />
-            {editingId ? "Save changes" : "Add goal"}
-          </button>
-          {editingId ? <button onClick={handleCancel}>Cancel</button> : null}
-        </div>
+    <div>
+      {/* Header row */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <h2 className="section-title" style={{ margin: 0 }}>Milestones</h2>
+        <button className="pill pill-primary" onClick={() => { setForm({ name: "", targetAmount: "", currentAmount: "0", targetDate: "" }); setEditingId(null); setShowForm(true); setError(""); }}>
+          <Plus size={15} /> New
+        </button>
       </div>
 
+      {/* Creation/Edit modal */}
+      {showForm ? (
+        <div className="sheet-overlay" onClick={() => setShowForm(false)}>
+          <div className="sheet" onClick={(e) => e.stopPropagation()}>
+            <h2>{editingId ? "Edit milestone" : "New milestone"}</h2>
+            <div className="ef">
+              <input className="ef-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Goal name" />
+              <input className="ef-input" type="number" min="0" step="0.01" value={form.targetAmount} onChange={(e) => setForm({ ...form, targetAmount: e.target.value })} placeholder="Target amount" />
+              <input className="ef-input" type="number" min="0" step="0.01" value={form.currentAmount} onChange={(e) => setForm({ ...form, currentAmount: e.target.value })} placeholder="Current amount" />
+              <input className="ef-input" type="date" value={form.targetDate} onChange={(e) => setForm({ ...form, targetDate: e.target.value })} />
+              {error ? <span className="ef-error">{error}</span> : null}
+              <div className="ef-actions">
+                <button className="pill pill-primary" onClick={handleSave}>{editingId ? "Save" : "Create milestone"}</button>
+                <button className="pill pill-secondary" onClick={() => setShowForm(false)}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Empty state */}
       {goals.length === 0 ? (
-        <div className="empty-state" role="status">
-          <strong>No goals yet</strong>
-          <p>Set a savings goal to track your progress over time.</p>
+        <div className="empty-state">
+          <strong>No milestones yet</strong>
+          <p>Create one target worth working toward.</p>
+          <button className="pill pill-primary" style={{ marginTop: 12 }} onClick={() => { setShowForm(true); setError(""); }}>Create milestone</button>
         </div>
       ) : (
-        <div className="goal-list" aria-live="polite" aria-atomic="false">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {goals.map((g) => {
             const progress = goalProgress(g);
             const remaining = g.targetAmount - g.currentAmount;
             const daysLeft = g.targetDate ? Math.ceil((new Date(g.targetDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
 
             return (
-              <div key={g.id} className="goal-row">
-                <div className="goal-header">
-                  <strong>{g.name}</strong>
-                  <span className="goal-target">{currency.format(g.targetAmount)} goal</span>
-                </div>
-
-                <div className="goal-progress-section">
-                  <div className="budget-bar-track">
-                    <div
-                      className={`budget-bar-fill ${progress >= 100 ? "budget-bar-ok" : "budget-bar-warn"}`}
-                      style={{ width: `${progress}%` }}
-                    />
+              <div key={g.id} className="card" style={{ padding: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 17, fontWeight: 700 }}>{g.name}</div>
+                    <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 2 }}>{currency.format(g.targetAmount)} target</div>
                   </div>
-                  <div className="goal-stats">
-                    <span className="positive">{currency.format(g.currentAmount)} saved</span>
-                    <span className="budget-pct">{progress}%</span>
+                  <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--positive)', fontVariantNumeric: 'tabular-nums' }}>{progress}%</div>
+                </div>
+
+                <div className="progress-track" style={{ margin: '0 0 10px' }}>
+                  <div className="progress-fill ok" style={{ width: Math.min(progress, 100) + '%' }} />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--text-tertiary)', marginBottom: daysLeft !== null ? 4 : 12 }}>
+                  <span style={{ fontWeight: 600, color: 'var(--text)' }}>{currency.format(g.currentAmount)} saved</span>
+                  <span>{currency.format(remaining)} to go</span>
+                </div>
+
+                {g.targetDate ? (
+                  <div style={{ fontSize: 12, color: daysLeft !== null && daysLeft < 30 ? 'var(--negative)' : 'var(--text-tertiary)', marginBottom: 12 }}>
+                    {daysLeft !== null ? (daysLeft > 0 ? `${daysLeft} days remaining` : "Past target date") : null}
                   </div>
-                </div>
+                ) : null}
 
-                <div className="goal-meta">
-                  <span>{currency.format(remaining)} remaining</span>
-                  {daysLeft !== null ? (
-                    <span className={daysLeft < 30 ? "negative" : ""}>
-                      {daysLeft > 0 ? `${daysLeft} days left` : "Past due"}
-                    </span>
-                  ) : null}
-                </div>
-
-                <div className="goal-actions">
+                <div style={{ display: 'flex', gap: 6, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
                   {contributeId === g.id ? (
-                    <div className="contribute-form">
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={contributeAmount}
-                        onChange={(e) => setContributeAmount(e.target.value)}
-                        placeholder="Amount"
-                        autoFocus
-                      />
-                      <button onClick={() => handleContribute(g.id)}>
-                        <ArrowUp size={14} />
-                        Add
-                      </button>
-                      <button onClick={() => { setContributeId(null); setContributeAmount(""); }}>Cancel</button>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <input type="number" min="0" step="0.01" value={contributeAmount}
+                        onChange={(e) => setContributeAmount(e.target.value)} placeholder="Amount" autoFocus
+                        style={{ width: 100, padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface-secondary)', fontSize: 13, outline: 'none' }} />
+                      <button className="pill pill-primary" style={{ padding: '6px 14px', fontSize: 12 }} onClick={() => handleContribute(g.id)}><ArrowUp size={13} /> Add</button>
+                      <button className="pill pill-secondary" style={{ padding: '6px 14px', fontSize: 12 }} onClick={() => { setContributeId(null); setContributeAmount(""); }}>Cancel</button>
                     </div>
                   ) : (
                     <>
-                      <button onClick={() => { setContributeId(g.id); setContributeAmount(""); }} aria-label={`Contribute to ${g.name}`}>
-                        <ArrowUp size={14} />
-                        Contribute
-                      </button>
-                      <button onClick={() => handleEdit(g)} aria-label={`Edit ${g.name}`}>
-                        <Pencil size={14} />
-                      </button>
-                      <button onClick={() => onDelete(g.id)} aria-label={`Delete ${g.name}`}>
-                        <Trash2 size={14} />
-                      </button>
+                      <button className="pill pill-primary" style={{ padding: '6px 14px', fontSize: 12 }} onClick={() => { setContributeId(g.id); setContributeAmount(""); }} aria-label={`Contribute to ${g.name}`}><ArrowUp size={13} /> Contribute</button>
+                      <button className="pill pill-secondary" style={{ padding: '6px 14px', fontSize: 12 }} onClick={() => handleEdit(g)} aria-label={`Edit ${g.name}`}><Pencil size={13} /> Edit</button>
+                      <button className="pill pill-secondary" style={{ padding: '6px 14px', fontSize: 12 }} onClick={() => onDelete(g.id)} aria-label={`Delete ${g.name}`}><Trash2 size={13} /> Delete</button>
                     </>
                   )}
                 </div>

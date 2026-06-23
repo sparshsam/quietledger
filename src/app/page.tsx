@@ -160,7 +160,6 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
   const screenshotModeRef = useRef(false);
   const [showTxForm, setShowTxForm] = useState(false);
-  const [showGoalForm, setShowGoalForm] = useState(false);
   const [parsedCsv, setParsedCsv] = useState<ParsedCsv | null>(null);
   const [csvFileName, setCsvFileName] = useState("");
   const [csvMapping, setCsvMapping] = useState<CsvMapping>({});
@@ -769,7 +768,6 @@ export default function Home() {
         
         ) : activeTab === "Goals" ? (
           <div className="narrow">
-            <h2 className="section-title">Financial milestones</h2>
             <GoalsPanel goals={goals} onSave={saveGoal} onDelete={deleteGoal} onContribute={contributeToGoal} />
           </div>
 
