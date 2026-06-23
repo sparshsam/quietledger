@@ -112,7 +112,7 @@ export function GoalsPanel({
       {goals.length === 0 ? (
         <div className="empty-state">
           <strong>No milestones yet</strong>
-          <p>Tap "New goal" to create your first milestone.</p>
+          <p>Tap New Goal to create your first milestone.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
