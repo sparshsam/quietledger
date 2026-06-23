@@ -69,7 +69,7 @@ const currency = new Intl.NumberFormat("en-CA", {
   currency: "CAD",
 });
 
-const TABS = ["Ledger", "Transactions", "Goals", "Settings"] as const;
+const TABS = ["Ledger", "Transactions", "Goals", "Control room"] as const;
 type Tab = (typeof TABS)[number];
 
 const accountIcons: Record<AccountKind, typeof Banknote> = {
@@ -160,6 +160,7 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
   const screenshotModeRef = useRef(false);
   const [showTxForm, setShowTxForm] = useState(false);
+  const [showGoalForm, setShowGoalForm] = useState(false);
   const [parsedCsv, setParsedCsv] = useState<ParsedCsv | null>(null);
   const [csvFileName, setCsvFileName] = useState("");
   const [csvMapping, setCsvMapping] = useState<CsvMapping>({});
@@ -591,7 +592,7 @@ export default function Home() {
       {/* Top navigation */}
       <nav className="navbar" aria-label="Navigation">
         <button onClick={() => setActiveTab("Ledger")} className="navbar-brand" style={{ border: 0, background: 'transparent', cursor: 'pointer' }}>
-          <img src="/icons/icon-source.png" alt="" style={{ width: 20, height: 20, borderRadius: 4 }} />
+          <img src="/icons/icon-source.png" alt="" style={{ width: 22, height: 22, borderRadius: 4 }} />
           OpenLedger
         </button>
         <div className="navbar-nav">
@@ -748,7 +749,7 @@ export default function Home() {
             {showTxForm && (
               <div className="sheet-overlay" onClick={() => setShowTxForm(false)}>
                 <div className="sheet" onClick={(e) => e.stopPropagation()}>
-                  <h2>Record transaction</h2>
+                  <h2>New ledger entry</h2>
                   <ManualTransactionForm
                     values={transactionForm} accounts={activeAccounts} error={transactionError}
                     onChange={setTransactionForm} onSave={() => { saveManualTransaction(); setShowTxForm(false); }}
@@ -773,20 +774,20 @@ export default function Home() {
           </div>
 
         
-        ) : activeTab === "Settings" ? (
+        ) : activeTab === "Control room" ? (
           <div className="narrow">
-            <details className="settings-section">
+            <details className="settings-section" open>
               <summary>Data</summary>
               <div className="settings-section-content">
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>Export, import, or reset your local ledger.</p>
                 <DataManagementPanel user={user} ledgerData={{ accounts, transactions, importMetadata, budgets, goals }} onResetToDemo={resetToDemoData} onClearLocal={clearLocalData} />
-                <div style={{ marginTop: 'var(--space-lg)' }}>
-                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 8 }}>Import transactions from your bank.</p>
-                  <label className="file-picker" style={{ display: 'inline-flex' }}>
-                    <Upload size={16} aria-hidden />
-                    Import CSV
+                <div style={{ marginTop: 24 }}>
+                  <label className="file-picker">
+                    <Upload size={16} />
+                    Import from CSV
                     <input type="file" accept=".csv,text/csv" onChange={handleCsvFile} />
                   </label>
-                  <div className="import-status" style={{ marginTop: 8, fontSize: 13, color: 'var(--text-tertiary)', display: 'block' }}>{importNotice}</div>
+                  <div className="import-status" style={{ marginTop: 8, fontSize: 13, color: 'var(--text-tertiary)' }}>{importNotice}</div>
                   {parsedCsv ? (
                     <CsvImportPreview
                       headers={parsedCsv.headers} mapping={csvMapping}
@@ -804,6 +805,7 @@ export default function Home() {
             <details className="settings-section">
               <summary>Accounts</summary>
               <div className="settings-section-content">
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>Create and organize the accounts that make up your ledger.</p>
                 <AccountManagement values={accountForm} accounts={accountsWithBalances} error={accountError}
                   onChange={setAccountForm} onSave={saveAccount}
                   onCancel={() => { setAccountForm({ name: "", kind: "chequing", subtitle: "", balance: "" }); setAccountError(""); }}
@@ -812,27 +814,14 @@ export default function Home() {
             </details>
 
             <details className="settings-section">
-              <summary>Budgets</summary>
-              <div className="settings-section-content">
-                <BudgetsPanel budgets={budgets} transactions={transactions} onSave={saveBudget} onDelete={deleteBudget} />
-              </div>
-            </details>
-
-            <details className="settings-section">
-              <summary>Cloud</summary>
-              <div className="settings-section-content">
-                {authMode === "signed-in" ? (
-                  <CloudBackupPanel user={user} ledgerData={{ accounts, transactions, budgets, goals }} onRestore={handleRestoreFromCloud} />
-                ) : (
-                  <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Sign in to enable cloud backup.</p>
-                )}
-              </div>
-            </details>
-
-            <details className="settings-section">
               <summary>Privacy</summary>
               <div className="settings-section-content">
-                <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 12 }}>Your financial data stays on this device. No data is collected, shared, or sold.</p>
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>OpenLedger stores your data in this browser unless you choose cloud backup.</p>
+                {authMode === "signed-in" ? (
+                  <div style={{ marginBottom: 16 }}>
+                    <CloudBackupPanel user={user} ledgerData={{ accounts, transactions, budgets, goals }} onRestore={handleRestoreFromCloud} />
+                  </div>
+                ) : null}
                 <AuthPanel user={user} profile={profile} onSignOut={() => {}} />
               </div>
             </details>
@@ -840,7 +829,8 @@ export default function Home() {
             <details className="settings-section">
               <summary>Legal</summary>
               <div className="settings-section-content">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>Policies, terms, and support.</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <a href="/privacy" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Privacy Policy</a>
                   <a href="/terms" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Terms of Service</a>
                   <a href="/support" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Support</a>

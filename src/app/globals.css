@@ -30,7 +30,7 @@
   --negative: #C44A4A;
 
   /* Typography */
-  --font-sans: "Stack Sans Notch", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Stack Sans Notch", var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-serif: Georgia, "Times New Roman", serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Code", monospace;
 
@@ -196,18 +196,26 @@ main.narrow { max-width: 720px; }
 
 /* ══ Legacy form support ══ */
 .form-grid { display: flex; flex-direction: column; gap: 12px; }
-.form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--text-secondary); }
-.form-grid input, .form-grid select { width: 100%; padding: 14px 16px; background: var(--surface-secondary); border: none; border-radius: var(--radius-sm); color: var(--text); font-size: 15px; outline: none; font-family: var(--font-sans); }
+.form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+.form-grid input, .form-grid select { width: 100%; min-height: 48px; padding: 14px 16px; background: var(--surface-secondary); border: none; border-radius: var(--radius-sm); color: var(--text); font-size: 15px; outline: none; font-family: var(--font-sans); }
 .form-grid input:focus, .form-grid select:focus { box-shadow: 0 0 0 2px var(--accent); }
 .form-grid .wide-field { grid-column: 1 / -1; }
 .account-form-grid { display: flex; flex-direction: column; gap: 12px; }
 .ledger-form { display: flex; flex-direction: column; gap: var(--space-md); }
 .form-actions { display: flex; gap: var(--space-sm); margin-top: var(--space-md); }
-.form-actions button { padding: 10px 24px; border-radius: 999px; font-size: 14px; font-weight: 600; border: none; background: var(--accent); color: white; cursor: pointer; }
+.form-actions button { min-height: 48px; padding: 12px 24px; border-radius: 999px; font-size: 14px; font-weight: 600; border: none; background: var(--accent); color: white; cursor: pointer; }
 .form-actions button:hover { background: var(--accent-hover); }
 .form-actions button:last-child { background: var(--surface-secondary); color: var(--text); }
 .gentle-error { color: var(--negative); font-size: 13px; display: block; margin-top: 4px; }
 .gentle-help { color: var(--text-tertiary); font-size: 13px; display: block; margin-top: 4px; }
+.managed-account-list { margin-top: var(--space-md); }
+.managed-account { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.managed-account strong { font-size: 14px; font-weight: 600; min-width: 100px; }
+.managed-account small { font-size: 12px; color: var(--text-secondary); flex: 1; }
+.managed-account.archived { opacity: 0.5; }
+.managed-account .tx-action-btn { padding: 6px 12px; font-size: 11px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; min-height: 32px; }
+.managed-account .tx-action-btn:hover { background: var(--surface-secondary); }
+.managed-account .tx-action-btn.danger:hover { color: var(--negative); border-color: rgba(196,74,74,0.3); }
 /* ══ Auth / cloud backup — inline ══ */
 .auth-section { margin-top: var(--space-lg); }
 .cloud-backup-panel { margin-top: var(--space-md); }
