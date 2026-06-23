@@ -95,9 +95,9 @@ button, .btn, .pill {
 @media (max-width: 600px) { .navbar-nav button, .navbar-nav a { font-size: 12px; padding: 6px 12px; } }
 
 /* ══ Main layout ══ */
-main { max-width: 1280px; margin: 0 auto; padding: var(--space-4xl) var(--space-lg) var(--space-3xl); }
-main.narrow, .narrow { max-width: 720px; width: 100%; margin-inline: auto; }
-.narrow { display: table; }
+main { max-width: 1280px; margin: 0 auto; padding: var(--space-4xl) 0 var(--space-3xl); }
+main > * { padding-left: var(--space-lg); padding-right: var(--space-lg); }
+main.narrow, .narrow { max-width: 720px; margin-inline: auto; width: 100%; }
 @media (max-width: 600px) { main { padding: var(--space-2xl) var(--space-md); } }
 
 /* ══ Hero ══ */
