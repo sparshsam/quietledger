@@ -159,6 +159,7 @@ export default function Home() {
   const [storageNotice, setStorageNotice] = useState("Loading local ledger...");
   const [hydrated, setHydrated] = useState(false);
   const screenshotModeRef = useRef(false);
+  const [showTxForm, setShowTxForm] = useState(false);
   const [parsedCsv, setParsedCsv] = useState<ParsedCsv | null>(null);
   const [csvFileName, setCsvFileName] = useState("");
   const [csvMapping, setCsvMapping] = useState<CsvMapping>({});
@@ -590,7 +591,7 @@ export default function Home() {
       {/* Top navigation */}
       <nav className="navbar" aria-label="Navigation">
         <button onClick={() => setActiveTab("Ledger")} className="navbar-brand" style={{ border: 0, background: 'transparent', cursor: 'pointer' }}>
-          <FileText size={20} aria-hidden />
+          <img src="/icons/icon-source.png" alt="" style={{ width: 20, height: 20, borderRadius: 4 }} />
           OpenLedger
         </button>
         <div className="navbar-nav">
@@ -620,8 +621,8 @@ export default function Home() {
               <p className="hero-headline">{currency.format(netWorth)}</p>
               <p className="hero-tagline">
                 {monthlyIncome > monthlyExpense
-                  ? "Your financial position is solid."
-                  : "Review your spending patterns."}
+                  ? "Your ledger is in order."
+                  : "Take a moment to review your recent entries."}
               </p>
               <p className="hero-sub">
                 Net worth {"\u2022"} {monthlyIncome > monthlyExpense
@@ -739,14 +740,23 @@ export default function Home() {
             <div style={{ marginBottom: 'var(--space-3xl)' }}>
               <TransactionsView transactions={transactions} accounts={accounts} />
             </div>
-            <div style={{ borderTop: '1px solid var(--border)', paddingTop: 'var(--space-2xl)', marginTop: 'var(--space-xl)' }}>
-              <h2 className="section-title">Manual entry</h2>
-              <ManualTransactionForm
-                values={transactionForm} accounts={activeAccounts} error={transactionError}
-                onChange={setTransactionForm} onSave={saveManualTransaction}
-                onCancel={() => { setTransactionForm({ date: today, description: "", merchant: "", amount: "", direction: "expense", accountId: activeAccounts[0]?.id ?? "chequing", category: "Misc", note: "" }); setTransactionError(""); }}
-              />
+            <div style={{ marginBottom: 'var(--space-lg)' }}>
+              <button className="pill pill-primary" onClick={() => setShowTxForm(true)}>
+                + New entry
+              </button>
             </div>
+            {showTxForm && (
+              <div className="sheet-overlay" onClick={() => setShowTxForm(false)}>
+                <div className="sheet" onClick={(e) => e.stopPropagation()}>
+                  <h2>Record transaction</h2>
+                  <ManualTransactionForm
+                    values={transactionForm} accounts={activeAccounts} error={transactionError}
+                    onChange={setTransactionForm} onSave={() => { saveManualTransaction(); setShowTxForm(false); }}
+                    onCancel={() => { setTransactionForm({ date: today, description: "", merchant: "", amount: "", direction: "expense", accountId: activeAccounts[0]?.id ?? "chequing", category: "Misc", note: "" }); setTransactionError(""); setShowTxForm(false); }}
+                  />
+                </div>
+              </div>
+            )}
             {transactions.length > 0 ? (
               <div style={{ marginTop: 'var(--space-2xl)' }}>
                 <h2 className="section-title">All entries</h2>
@@ -765,85 +775,81 @@ export default function Home() {
         
         ) : activeTab === "Settings" ? (
           <div className="narrow">
-            <h2 className="section-title">Account</h2>
-            <div className="settings-section">
-              <AuthPanel user={user} profile={profile} onSignOut={() => {}} />
-            </div>
-
-            {authMode === "signed-in" ? (
-              <div className="settings-section">
-                <h2>Cloud backup</h2>
-                <CloudBackupPanel user={user} ledgerData={{ accounts, transactions, budgets, goals }} onRestore={handleRestoreFromCloud} />
-              </div>
-            ) : null}
-
-            <div className="settings-section">
-              <h2>Data</h2>
-              <DataManagementPanel user={user} ledgerData={{ accounts, transactions, importMetadata, budgets, goals }} onResetToDemo={resetToDemoData} onClearLocal={clearLocalData} />
-            </div>
-
-            <div className="settings-section">
-              <h2>CSV import</h2>
-              <div className="csv-import">
-                <div className="import-intro">
-                  <div>
-                    <strong>Bring your bank export</strong>
-                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0' }}>CSV parsing happens locally in this browser.</p>
-                  </div>
-                  <label className="file-picker">
+            <details className="settings-section">
+              <summary>Data</summary>
+              <div className="settings-section-content">
+                <DataManagementPanel user={user} ledgerData={{ accounts, transactions, importMetadata, budgets, goals }} onResetToDemo={resetToDemoData} onClearLocal={clearLocalData} />
+                <div style={{ marginTop: 'var(--space-lg)' }}>
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 8 }}>Import transactions from your bank.</p>
+                  <label className="file-picker" style={{ display: 'inline-flex' }}>
                     <Upload size={16} aria-hidden />
-                    Select CSV
+                    Import CSV
                     <input type="file" accept=".csv,text/csv" onChange={handleCsvFile} />
                   </label>
+                  <div className="import-status" style={{ marginTop: 8, fontSize: 13, color: 'var(--text-tertiary)', display: 'block' }}>{importNotice}</div>
+                  {parsedCsv ? (
+                    <CsvImportPreview
+                      headers={parsedCsv.headers} mapping={csvMapping}
+                      onMappingChange={(field, header) => setCsvMapping((current) => ({ ...current, [field]: header || undefined }))}
+                      defaultAccountId={defaultImportAccountId} onDefaultAccountChange={setDefaultImportAccountId}
+                      accounts={activeAccounts} rows={importPreview}
+                      validCount={validImportRows.length} duplicateCount={duplicateImportRows.length} errorCount={errorImportRows.length}
+                      onSave={saveImportedTransactions}
+                    />
+                  ) : null}
                 </div>
-                <div className="import-status">
-                  <span>{importNotice}</span>
+              </div>
+            </details>
+
+            <details className="settings-section">
+              <summary>Accounts</summary>
+              <div className="settings-section-content">
+                <AccountManagement values={accountForm} accounts={accountsWithBalances} error={accountError}
+                  onChange={setAccountForm} onSave={saveAccount}
+                  onCancel={() => { setAccountForm({ name: "", kind: "chequing", subtitle: "", balance: "" }); setAccountError(""); }}
+                  onEdit={editAccount} onArchive={archiveAccount} />
+              </div>
+            </details>
+
+            <details className="settings-section">
+              <summary>Budgets</summary>
+              <div className="settings-section-content">
+                <BudgetsPanel budgets={budgets} transactions={transactions} onSave={saveBudget} onDelete={deleteBudget} />
+              </div>
+            </details>
+
+            <details className="settings-section">
+              <summary>Cloud</summary>
+              <div className="settings-section-content">
+                {authMode === "signed-in" ? (
+                  <CloudBackupPanel user={user} ledgerData={{ accounts, transactions, budgets, goals }} onRestore={handleRestoreFromCloud} />
+                ) : (
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Sign in to enable cloud backup.</p>
+                )}
+              </div>
+            </details>
+
+            <details className="settings-section">
+              <summary>Privacy</summary>
+              <div className="settings-section-content">
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 12 }}>Your financial data stays on this device. No data is collected, shared, or sold.</p>
+                <AuthPanel user={user} profile={profile} onSignOut={() => {}} />
+              </div>
+            </details>
+
+            <details className="settings-section">
+              <summary>Legal</summary>
+              <div className="settings-section-content">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+                  <a href="/privacy" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Privacy Policy</a>
+                  <a href="/terms" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Terms of Service</a>
+                  <a href="/support" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Support</a>
                 </div>
-                {parsedCsv ? (
-                  <CsvImportPreview
-                    headers={parsedCsv.headers} mapping={csvMapping}
-                    onMappingChange={(field, header) => setCsvMapping((current) => ({ ...current, [field]: header || undefined }))}
-                    defaultAccountId={defaultImportAccountId} onDefaultAccountChange={setDefaultImportAccountId}
-                    accounts={activeAccounts} rows={importPreview}
-                    validCount={validImportRows.length} duplicateCount={duplicateImportRows.length} errorCount={errorImportRows.length}
-                    onSave={saveImportedTransactions}
-                  />
-                ) : null}
               </div>
-            </div>
-
-            <div className="settings-section">
-              <h2>Accounts</h2>
-              <AccountManagement values={accountForm} accounts={accountsWithBalances} error={accountError}
-                onChange={setAccountForm} onSave={saveAccount}
-                onCancel={() => { setAccountForm({ name: "", kind: "chequing", subtitle: "", balance: "" }); setAccountError(""); }}
-                onEdit={editAccount} onArchive={archiveAccount} />
-            </div>
-
-            <div className="settings-section">
-              <h2>Budget management</h2>
-              <BudgetsPanel budgets={budgets} transactions={transactions} onSave={saveBudget} onDelete={deleteBudget} />
-            </div>
-
-            <div className="settings-section">
-              <h2>Preferences</h2>
-              <button className="pill pill-secondary" onClick={() => setLocalOnly((current) => !current)}>
-                <Moon size={14} style={{ verticalAlign: 'middle', marginRight: 6 }} />
-                Local-only mode: {localOnly ? "On" : "Off"}
-              </button>
-            </div>
-
-            <div className="settings-section">
-              <h2>Legal</h2>
-              <div style={{ display: 'flex', gap: 'var(--space-md)' }}>
-                <a href="/privacy" className="pill pill-ghost">Privacy Policy</a>
-                <a href="/terms" className="pill pill-ghost">Terms of Service</a>
-                <a href="/support" className="pill pill-ghost">Support</a>
-              </div>
-            </div>
+            </details>
 
             <div style={{ textAlign: 'center', marginTop: 'var(--space-3xl)', fontSize: 12, color: 'var(--text-tertiary)' }}>
-              OpenLedger {"\u2022"} Free &amp; open-source {"\u2022"} AGPL-3.0
+              OpenLedger \u2022 Free &amp; open-source \u2022 AGPL-3.0
             </div>
           </div>
         ) : null}
