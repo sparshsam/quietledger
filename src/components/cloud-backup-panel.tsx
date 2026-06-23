@@ -100,7 +100,7 @@ export function CloudBackupPanel({ user, ledgerData, onRestore }: Props) {
     }).format(new Date(ts));
 
   return (
-    <div className="settings-panel-content">
+    <div>
       <div className="settings-panel-section">
         {backup ? (
           <p className="gentle-help" style={{ marginBottom: 12 }}>

@@ -97,7 +97,7 @@ export function DataManagementPanel({ user, ledgerData, onResetToDemo, onClearLo
   };
 
   return (
-    <div className="settings-panel-content">
+    <div>
       <div className="settings-panel-section">
         <h4 className="settings-panel-heading">Export</h4>
         <p className="gentle-help" style={{ marginBottom: 12 }}>

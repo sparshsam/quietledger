@@ -772,8 +772,12 @@ export default function Home() {
             <details className="settings-section" open>
               <summary>Data</summary>
               <div className="settings-section-content">
-                <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>Export, import, or reset your local ledger.</p>
-                <DataManagementPanel user={user} ledgerData={{ accounts, transactions, importMetadata, budgets, goals }} onResetToDemo={resetToDemoData} onClearLocal={clearLocalData} />
+                <div className="settings-panel-content">
+                  <div className="settings-panel-section">
+                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>Export, import, or reset your local ledger.</p>
+                    <DataManagementPanel user={user} ledgerData={{ accounts, transactions, importMetadata, budgets, goals }} onResetToDemo={resetToDemoData} onClearLocal={clearLocalData} />
+                  </div>
+                </div>
               </div>
             </details>
 
@@ -795,13 +799,17 @@ export default function Home() {
             <details className="settings-section">
               <summary>Privacy</summary>
               <div className="settings-section-content">
-                <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>Your data stays on this device.</p>
-                {authMode === "signed-in" ? (
-                  <div style={{ marginBottom: 16 }}>
-                    <CloudBackupPanel user={user} ledgerData={{ accounts, transactions, budgets, goals }} onRestore={handleRestoreFromCloud} />
+                <div className="settings-panel-content">
+                  <div className="settings-panel-section">
+                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>Your data stays on this device.</p>
+                    {authMode === "signed-in" ? (
+                      <div style={{ marginBottom: 16 }}>
+                        <CloudBackupPanel user={user} ledgerData={{ accounts, transactions, budgets, goals }} onRestore={handleRestoreFromCloud} />
+                      </div>
+                    ) : null}
+                    <AuthPanel user={user} profile={profile} onSignOut={() => {}} />
                   </div>
-                ) : null}
-                <AuthPanel user={user} profile={profile} onSignOut={() => {}} />
+                </div>
               </div>
             </details>
 
