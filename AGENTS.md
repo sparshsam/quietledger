@@ -6,17 +6,18 @@ OpenLedger is a private, local-first finance tool. Warm ledger aesthetic, editor
 
 ## Current Release
 
-v0.8.8 — Goals button alignment fix. Live at https://openledger-two.vercel.app
+v0.8.9 — Settings panel consistency + release QA. Live at https://openledgerbysparsh.vercel.app
 
 ## Build History (v0.8.x Quick Reference)
 
 | Version | What |
 |---------|------|
-| v0.8.4 | Visual QA — goals panel rewrite (editorial cards, modal form, pill actions) |
-| v0.8.5 | Removed duplicate TransactionTable, fixed Settings width, fixed Goals button icon |
-| v0.8.6 | Button layout — single creation path per page, descriptive subtext, "Save" not "Create milestone" |
-| v0.8.7 | Button label order — text before icon everywhere (Record transaction +, New Goal +) |
+| v0.8.9 | Settings panel consistency, display:table CSS fix, font @import fix, release QA, Design Playbook checklist verified |
 | v0.8.8 | Goals "New Goal +" button nowrap + CLAUDE.md updated |
+| v0.8.7 | Button label order — text before icon everywhere (Record transaction +, New Goal +) |
+| v0.8.6 | Button layout — single creation path per page, descriptive subtext, "Save" not "Create milestone" |
+| v0.8.5 | Removed duplicate TransactionTable, fixed Settings width, fixed Goals button icon |
+| v0.8.4 | Visual QA — goals panel rewrite (editorial cards, modal form, pill actions) |
 
 ## Rules
 

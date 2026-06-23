@@ -36,7 +36,7 @@ Releases:
 - **Data:** Local-first (`localStorage`), optional Supabase cloud backup
 - **Auth:** Supabase Auth (email OTP, Google OAuth)
 - **Database:** Supabase Postgres (shared Elora project — `openledger_` prefix)
-- **Deployment:** Vercel → https://openledger-two.vercel.app
+- **Deployment:** Vercel → https://openledgerbysparsh.vercel.app
 - **GitHub:** https://github.com/sparshsam/openledger
 
 ## Status — v0.8.x (Editorial Product)
@@ -56,11 +56,11 @@ Releases:
 - Modal/sheet-based transaction creation ("New ledger entry")
 - Spending plans (budgets) with progress tracking
 - Milestone goals with modal creation, progress cards, contribution support
-- Control Room (Settings) with 4 expandable sections: Data, Accounts, Privacy, Legal
+- Control Room (Settings) with 4 consistent card-panel sections: Data, Accounts, Privacy, Legal
 - Warm ledger brown color palette (#8B6534), parchment background (#F5F0E8)
 - Stack Sans Notch typography via Google Fonts
 - Pill-shaped buttons with consistent text-then-icon ordering
-- Expandable settings with details/summary elements
+- Expandable settings with details/summary elements and consistent card-panel content areas
 - Finance engine (totals, grouping, insights, trends, budgets, goals) with 50 unit tests
 
 ### Design System (OpenProof Playbook aligned)
@@ -69,11 +69,14 @@ Releases:
 - All buttons are pills (999px radius)
 - 4-tab navigation: Ledger, Transactions, Goals, Settings
 - Mobile: bottom tab bar. Desktop: sticky top navbar
-- Max 1280px content width, 720px for narrow pages
+- Max 1280px content width, 720px for settings/goals narrow pages
+- `<main>` uses `width: 100%` with `max-width: 1280px` (flex-body compat)
+- `.narrow` containers use `max-width: 720px; width: 100%` with `margin-inline: auto`
 - Stack Sans Notch font with Inter fallback from Google Fonts
 
 ### What does NOT exist yet
 - No automatic cloud sync (must be manually triggered)
+- No MCP server for AI agent data access (build guide at `docs/mcp-server-build-guide.md`)
 - No background jobs or scheduled backups
 - No encryption-at-rest for local storage
 - No bank login / Plaid / aggregation
@@ -126,6 +129,8 @@ npx vercel deploy --prod  # Deploy to Vercel
 | `src/components/goals-panel.tsx` | Goal CRUD, progress tracking, contributions |
 | `src/components/empty-states.tsx` | Shared empty state components |
 | `supabase/migrations/` | SQL migrations (3 files) |
+| `docs/design-playbook.md` | Editorial UI design system reference |
+| `docs/mcp-server-build-guide.md` | MCP server blueprint for AI agent access |
 
 ## Branch Naming
 
