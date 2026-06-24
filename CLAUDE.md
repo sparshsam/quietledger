@@ -5,9 +5,12 @@
 OpenLedger is a private, local-first finance tool for everyday budgeting and records.
 Built with Next.js + TypeScript. Formerly QuietLedger.
 
-Current Release: v0.9.5 — Recurring Entries (2026-06-24)
+Current Release: v0.9.8 — Sync Hardening & Security Audit (2026-06-24)
 
 Releases:
+           v0.9.8 — Sync hardening, data integrity, security audit, 76 tests
+           v0.9.7 — Conflict detection, device management, force re-sync, diagnostics
+           v0.9.6 — Receipt capture, Supabase Storage, photo upload, camera, gallery
            v0.9.5 — Recurring Entries, schedule engine, upcoming entries
            v0.9.4 — Search & Ledger Navigation, global search, Quick Jump
            v0.9.3 — Cloud Sync Beta, auto-sync, device list, sync now
@@ -66,10 +69,13 @@ Releases:
 - Stack Sans Notch typography via Google Fonts
 - Pill-shaped buttons with consistent text-then-icon ordering
 - Expandable settings with details/summary elements and consistent card-panel content areas
-- Cloud Sync Beta — auto-sync, Sync Now, sync status indicator, device list, sync activity history
+- Cloud Sync Beta — auto-sync, Sync Now, conflict detection, force re-sync, device management, diagnostics
+- Receipt capture — photo upload, mobile camera, gallery, preview, deletion, Supabase Storage
 - Global search — search descriptions, notes, categories, accounts, amount ranges; saved filters; Quick Jump (Ctrl+K)
 - Recurring entries — monthly/weekly/custom schedules, upcoming entries, skip/pause/resume
-- Finance engine (totals, grouping, insights, trends, budgets, goals) with 50 unit tests
+- Data integrity — duplicate detection, transaction validation, account reconciliation, backup/restore verification
+- Security audit — RLS review, dependency audit, storage policy hardening
+- Finance engine (totals, grouping, insights, trends, budgets, goals) with 76 unit tests
 - Supabase database with 12 migration-managed tables (profiles, accounts, transactions, categories, budgets, goals, imports, audit_events, backups, devices, sync_events, receipts)
 - Typed Supabase client types in `src/lib/supabase/database.types.ts`
 

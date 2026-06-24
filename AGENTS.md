@@ -6,12 +6,19 @@ OpenLedger is a private, local-first finance tool. Warm ledger aesthetic, editor
 
 ## Current Release
 
-v0.9.2 — Account Gateway (landing page, /app route, account gateway, empty default state). Live at https://openledgerbysparsh.vercel.app
+v0.9.8 — Sync hardening, data integrity, security audit (76 tests). Live at https://openledgerbysparsh.vercel.app
 
 ## Build History (v0.8.x Quick Reference)
 
 | Version | What |
 |---------|------|
+| v0.9.8 | Sync hardening, data integrity validation (duplicates, reconciliation, backup verify), security audit, 76 tests |
+| v0.9.7 | Conflict detection, device rename/remove, force re-sync, sync diagnostics page |
+| v0.9.6 | Receipt capture — Supabase Storage, photo upload, mobile camera, gallery, preview |
+| v0.9.5 | Recurring entries — weekly/monthly/custom schedules, skip/pause/resume, upcoming entries |
+| v0.9.4 | Search & Ledger Navigation — global search, Quick Jump (Ctrl+K), saved filters |
+| v0.9.3 | Cloud Sync Beta — auto-sync, sync indicator, device list, /app/sync page |
+| v0.9.2 | Account Gateway — landing page, /app route, account gateway, empty default state |
 | v0.9.1 | Google Auth Foundation — Google-only OAuth, device registration, Privacy section redesign, domain cleanup, auth docs |
 | v0.9.0 | Supabase Readiness — 3 new tables (devices, sync_events, receipts), RLS WITH CHECK + TO authenticated fixes, database types, migration v4 |
 | v0.8.8 | Goals "New Goal +" button nowrap + CLAUDE.md updated |
