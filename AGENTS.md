@@ -6,12 +6,13 @@ OpenLedger is a private, local-first finance tool. Warm ledger aesthetic, editor
 
 ## Current Release
 
-v0.9.0 — Supabase Readiness (12 migration-managed tables, RLS hardened). Live at https://openledgerbysparsh.vercel.app
+v0.9.1 — Google Auth Foundation (Google-only OAuth, device registration, auth docs). Live at https://openledgerbysparsh.vercel.app
 
 ## Build History (v0.8.x Quick Reference)
 
 | Version | What |
 |---------|------|
+| v0.9.1 | Google Auth Foundation — Google-only OAuth, device registration, Privacy section redesign, domain cleanup, auth docs |
 | v0.9.0 | Supabase Readiness — 3 new tables (devices, sync_events, receipts), RLS WITH CHECK + TO authenticated fixes, database types, migration v4 |
 | v0.8.8 | Goals "New Goal +" button nowrap + CLAUDE.md updated |
 | v0.8.7 | Button label order — text before icon everywhere (Record transaction +, New Goal +) |

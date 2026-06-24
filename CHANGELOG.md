@@ -2,6 +2,18 @@
 
 All notable changes to OpenLedger will be documented here.
 
+## 0.9.1 — 2026-06-24
+
+- **Auth UX overhaul:** Removed email OTP sign-in. Primary auth is now "Continue with Google" with "Continue as Guest" as the default.
+- **Device registration:** After a successful Google sign-in, the current browser is automatically registered in `openledger_devices` (device_id, device_name, device_type, app_version, last_seen).
+- **Session hardening:** Fixed `openledger_profiles` fetch to use `.maybeSingle()` instead of `.single()` — prevents spurious errors on first sign-in.
+- **Domain cleanup:** Updated layout metadata, OpenGraph URLs, package.json homepage, and screenshot capture guide from `openledger-two.vercel.app` to `openledgerbysparsh.vercel.app`.
+- **Privacy section redesign:** Settings Privacy now explains Guest Mode, Google Account, and Cloud Features with current auth state display.
+- **Privacy policy:** Removed email OTP mention; updated to reflect Google-only auth.
+- **Auth architecture docs:** Added `docs/auth-architecture.md` covering guest vs. authenticated users, device registration, RLS model, and shared project strategy.
+- **Auth CSS:** Dedicated auth panel styles in globals.css (auth-guest, auth-google-btn, auth-signed-in, auth-badge, auth-sign-out, etc.).
+- All auth remains optional. Guest/local-first mode is unchanged.
+
 ## 0.9.0 — 2026-06-23
 
 - **Supabase Readiness** — Created 12 migration-managed tables on the shared Elora project.

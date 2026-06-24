@@ -32,7 +32,7 @@ export default function PrivacyPage() {
       <section>
         <h2>Optional Cloud Backup</h2>
         <p>
-          If you choose to sign in (via email OTP or Google OAuth), you may optionally back up your ledger to Supabase,
+          If you choose to sign in (via Google OAuth), you may optionally back up your ledger to Supabase,
           a hosted PostgreSQL database. This backup is manually triggered — it is never automatic. Only the data you
           explicitly upload is stored. You may delete your cloud backup at any time from the Cloud Backup panel.
         </p>

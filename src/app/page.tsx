@@ -801,12 +801,31 @@ export default function Home() {
               <div className="settings-section-content">
                 <div className="settings-panel-content">
                   <div className="settings-panel-section">
-                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>Your data stays on this device.</p>
+                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>
+                      OpenLedger is <strong>local-first by design</strong>. Your data lives in this browser and never leaves without your explicit action.
+                    </p>
+
+                    <div className="privacy-modes" style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 20 }}>
+                      <div style={{ marginBottom: 12 }}>
+                        <strong style={{ color: 'var(--text-primary)' }}>Guest Mode</strong>
+                        <br />Default. All features work without an account. Data is stored in this browser only.
+                      </div>
+                      <div style={{ marginBottom: 12 }}>
+                        <strong style={{ color: 'var(--text-primary)' }}>Google Account</strong>
+                        <br />Optional sign-in. Enables cloud backup. Your local data stays in this browser — only what you upload leaves.
+                      </div>
+                      <div>
+                        <strong style={{ color: 'var(--text-primary)' }}>Cloud Features</strong>
+                        <br />Manual backup and restore. Never automatic. You control every upload and deletion.
+                      </div>
+                    </div>
+
                     {authMode === "signed-in" ? (
                       <div style={{ marginBottom: 16 }}>
                         <CloudBackupPanel user={user} ledgerData={{ accounts, transactions, budgets, goals }} onRestore={handleRestoreFromCloud} />
                       </div>
                     ) : null}
+
                     <AuthPanel user={user} profile={profile} onSignOut={() => {}} />
                   </div>
                 </div>

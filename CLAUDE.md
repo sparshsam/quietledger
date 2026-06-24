@@ -5,9 +5,10 @@
 OpenLedger is a private, local-first finance tool for everyday budgeting and records.
 Built with Next.js + TypeScript. Formerly QuietLedger.
 
-Current Release: v0.9.0 — Supabase Readiness (2026-06-23)
+Current Release: v0.9.1 — Google Auth Foundation (2026-06-24)
 
 Releases:
+           v0.9.1 — Google Auth Foundation, auth UX overhaul, device registration, domain cleanup
            v0.9.0 — Supabase Readiness, 3 new tables, RLS hardening, database types
            v0.8.9 — Settings panel consistency, release QA, CSS @import fix
            v0.8.8 — Goals button alignment fix
@@ -49,7 +50,7 @@ Releases:
 - Client-side CSV import with preview, validation, dedup
 - Local persistence via `localStorage` with JSON export/import
 - PWA manifest + full icon set
-- Supabase Auth (email OTP, Google OAuth) — optional sign-in
+- Supabase Auth (Google OAuth) — optional sign-in, email OTP removed
 - Cloud Backup — signed-in users can manually back up and restore
 - RLS on all `openledger_*` tables — users can only access own data
 - Editorial home screen with hero net worth, accounts strip, budget/goal progress, recent activity

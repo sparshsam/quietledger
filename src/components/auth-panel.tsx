@@ -1,57 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getDeviceCount } from "@/lib/supabase/device";
 import type { User } from "@supabase/supabase-js";
 
 type AuthPanelProps = {
   user: User | null;
   profile: { display_name: string | null; email: string | null; avatar_url: string | null } | null;
-  onSignOut: () => void;
+  onSignOut?: () => void;
 };
 
 export function AuthPanel({ user, profile, onSignOut }: AuthPanelProps) {
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
-  const [sending, setSending] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+  const [deviceCount, setDeviceCount] = useState<number | null>(null);
 
-  const handleEmailOtp = async () => {
-    if (!email.trim()) return;
-    setSending(true);
-    setError("");
-    setSent(false);
-
-    const supabase = createClient();
-    const { error: err } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: {
-        shouldCreateUser: true,
-      },
-    });
-
-    if (err) {
-      setError(err.message);
-    } else {
-      setSent(true);
+  useEffect(() => {
+    if (user) {
+      getDeviceCount().then(setDeviceCount);
     }
-    setSending(false);
-  };
+  }, [user]);
 
   const handleGoogleSignIn = async () => {
+    setSigningIn(true);
+    setError("");
     const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
+    const { error: err } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
+    if (err) {
+      setError(err.message);
+      setSigningIn(false);
+    }
+    // signingIn stays true while OAuth redirect happens
   };
 
   const handleSignOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    onSignOut();
+    onSignOut?.();
   };
 
   // Signed-in state
@@ -72,6 +63,9 @@ export function AuthPanel({ user, profile, onSignOut }: AuthPanelProps) {
           </div>
         </div>
         <span className="auth-badge">Cloud-ready</span>
+        {deviceCount !== null ? (
+          <span className="auth-device-count">{deviceCount} device{deviceCount !== 1 ? "s" : ""}</span>
+        ) : null}
         <button className="auth-sign-out" onClick={handleSignOut}>
           Sign out
         </button>
@@ -79,7 +73,7 @@ export function AuthPanel({ user, profile, onSignOut }: AuthPanelProps) {
     );
   }
 
-  // Guest state
+  // Guest state — Google first, guest second
   return (
     <div className="auth-guest">
       <div className="auth-mode-label">
@@ -88,41 +82,24 @@ export function AuthPanel({ user, profile, onSignOut }: AuthPanelProps) {
         <span className="auth-badge guest">Local-only</span>
       </div>
 
-      {sent ? (
-        <p className="auth-success">
-          Check <strong>{email}</strong> for a sign-in link. It expires in 10 minutes.
-        </p>
-      ) : (
-        <>
-          <div className="auth-email-form">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              onKeyDown={(e) => e.key === "Enter" && handleEmailOtp()}
-            />
-            <button onClick={handleEmailOtp} disabled={sending || !email.trim()}>
-              {sending ? "Sending..." : "Send sign-in link"}
-            </button>
-          </div>
+      <p className="gentle-help" style={{ marginBottom: 16 }}>
+        Signing in enables optional cloud backup. Your local data stays in this browser.
+      </p>
 
-          <div className="auth-divider">
-            <span>or</span>
-          </div>
+      <button
+        className="auth-google-btn"
+        onClick={handleGoogleSignIn}
+        disabled={signingIn}
+      >
+        <GoogleIcon />
+        {signingIn ? "Redirecting…" : "Continue with Google"}
+      </button>
 
-          <button className="auth-google-btn" onClick={handleGoogleSignIn}>
-            <GoogleIcon />
-            Continue with Google
-          </button>
-        </>
-      )}
+      <p className="gentle-help" style={{ fontSize: 13, marginTop: 12, textAlign: "center" }}>
+        No Google account? All features work in guest mode.
+      </p>
 
       {error ? <p className="gentle-error">{error}</p> : null}
-
-      <p className="gentle-help">
-        Signing in prepares your account for future cloud sync. Your local ledger data stays in this browser.
-      </p>
     </div>
   );
 }

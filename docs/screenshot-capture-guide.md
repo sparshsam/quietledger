@@ -117,7 +117,7 @@ For scripted capture, a Playwright script can navigate the app with `?screenshot
 ```ts
 import { chromium } from "playwright";
 
-const baseUrl = "https://openledger-two.vercel.app?ss=true";
+const baseUrl = "https://openledgerbysparsh.vercel.app?ss=true";
 const desktop = { width: 1440, height: 1000 };
 const mobile = { width: 390, height: 900 };
 

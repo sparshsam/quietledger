@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://openledger-two.vercel.app"),
+  metadataBase: new URL("https://openledgerbysparsh.vercel.app"),
   title: {
     default: "OpenLedger",
     template: "%s · OpenLedger",
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "OpenLedger",
     description: "A private, editorial personal finance ledger.",
-    url: "https://openledger-two.vercel.app",
+    url: "https://openledgerbysparsh.vercel.app",
     siteName: "OpenLedger",
     images: [
       {

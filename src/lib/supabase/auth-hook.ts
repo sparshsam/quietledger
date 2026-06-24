@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { registerDevice } from "@/lib/supabase/device";
 import type { User } from "@supabase/supabase-js";
 
 type AuthState = {
@@ -31,6 +32,9 @@ export function useAuth() {
 
       if (user) {
         profile = await fetchProfile(supabase, user.id);
+
+        // Register device silently on sign-in
+        registerDevice().catch(() => {});
       }
 
       setState({ user, session: data.session, loading: false, profile });
@@ -52,6 +56,9 @@ export function useAuth() {
           user.email as string | undefined,
           user.user_metadata?.avatar_url as string | undefined,
         );
+
+        // Register device silently on sign-in
+        registerDevice().catch(() => {});
       }
 
       setState({ user, session, loading: false, profile });
@@ -76,7 +83,7 @@ async function fetchProfile(
     .from("openledger_profiles")
     .select("display_name, email, avatar_url")
     .eq("user_id", userId)
-    .single();
+    .maybeSingle();
 
   if (existing) return existing;
 
