@@ -1,4 +1,4 @@
-const CACHE_NAME = "openledger-shell-v2";
+const CACHE_NAME = "openledger-shell-v3";
 const SHELL_ASSETS = ["/", "/manifest.webmanifest", "/icons/icon.svg"];
 
 self.addEventListener("install", (event) => {
