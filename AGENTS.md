@@ -6,12 +6,35 @@ OpenLedger is a private, local-first finance tool. Warm ledger aesthetic, editor
 
 ## Current Release
 
-v0.9.9 — MCP Server (30 AI agent tools, token auth, Streamable HTTP endpoint). Live at https://openledgerbysparsh.vercel.app
+v0.9.10 — Mobile & Identity Release Candidate (2026-06-24, NOT fully deployed)
+
+⚠ **STATUS: Pushed to main. Vercel free-plan rate limit hit (100 deploys/day).**
+Auto-deploy resumes when limit resets (~24h from 2026-06-24 18:00 UTC).
+Until then: `npm run dev` for local testing.
+
+## Known Issues (must fix before promoting)
+
+1. **Auth callback cookies lost on redirect** — `src/app/auth/callback/route.ts`
+   fix IS on main (commit a50b2c2) but not deployed. Rewrites Supabase session
+   cookies onto the 302 redirect response so they survive the redirect.
+2. **Vercel rate limited** — ~24h from last deploy.
+3. **CSV import preview needs styling** — CsvImportPreview renders an ugly grid.
+4. **PWA cache** — old service worker may persist. Use incognito or clear site data.
+
+## Resume Checklist
+
+- [ ] Wait for Vercel rate limit to reset
+- [ ] Verify auth callback fix deployed (sign in → Profile shows name/email)
+- [ ] Test CSV import: Ledger page → "Import bank statements" → CSV file → mapping preview → Save
+- [ ] Style the CSV import preview component
+- [ ] Run `npm run lint && npm run typecheck && npm test && npm run build`
+- [ ] Deploy to production
 
 ## Build History (v0.9.x Quick Reference)
 
 | Version | What |
 |---------|------|
+| v0.9.10 | Mobile & Identity RC — new accent #7A2F00, bottom tab bar, mobile audit, Profile section, CSV import wired up, auth callback fix, a11y pass |
 | v0.9.9 | MCP Server — 30 tools across 7 domains, token auth (SHA-256), Settings UI for create/list/revoke, Vercel-hosted Streamable HTTP endpoint, 76 tests |
 | v0.9.8 | Sync hardening, data integrity validation (duplicates, reconciliation, backup verify), security audit, 76 tests |
 | v0.9.7 | Conflict detection, device rename/remove, force re-sync, sync diagnostics page |
@@ -52,7 +75,7 @@ OpenLedger ships with an MCP server (`apps/mcp/`) that exposes 30 tools for AI a
 2. **No tracking.** No analytics, no telemetry, no third-party scripts.
 3. **Privacy.** All data stays on the user's device.
 4. **Calm UX.** Avoid financial gamification, urgency patterns, or manipulative UI.
-5. **Design system.** OpenProof Design Playbook — editorial layout, pill buttons, accent color #8B6534.
+5. **Design system.** OpenProof Design Playbook — editorial layout, pill buttons, accent color #7A2F00.
 6. **Branch naming:** `feat/*`, `fix/*`, `docs/*`, `refactor/*`, `chore/*`.
 
 ## Ecosystem Standards

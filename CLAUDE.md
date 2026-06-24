@@ -5,9 +5,14 @@
 OpenLedger is a private, local-first finance tool for everyday budgeting and records.
 Built with Next.js + TypeScript. Formerly QuietLedger.
 
-Current Release: v0.9.9 — MCP Server (2026-06-24)
+Current Release: v0.9.10 — Mobile & Identity Release Candidate (2026-06-24)
+
+⚠ **STATUS: Release candidate — pushed to `main` but NOT fully deployed.**
+Vercel free-plan deployment rate limit hit (100/day). Auto-deploy will resume
+when limit resets (~24h). Until then, run `npm run dev` locally to test.
 
 Releases:
+           v0.9.10 — Mobile & Identity Release Candidate (CURRENT — see known issues below)
            v0.9.9 — MCP Server, 30 AI agent tools, token auth, 76 tests
            v0.9.8 — Sync hardening, data integrity, security audit, 76 tests
            v0.9.7 — Conflict detection, device management, force re-sync, diagnostics
@@ -48,7 +53,32 @@ Releases:
 - **Deployment:** Vercel → https://openledgerbysparsh.vercel.app
 - **GitHub:** https://github.com/sparshsam/openledger
 
-## Status — v0.9.x (Editorial Product)
+## Status — v0.9.10 (Mobile & Identity Release Candidate)
+
+### v0.9.10 Changes (all pushed to main)
+- **Brand color:** #8B6534 (warm brown) → #7A2F00 (deep rust) everywhere — CSS vars, manifest, inline styles, hardcoded refs
+- **Mobile bottom tab bar:** 5-tab nav with icons (Ledger/Transactions/Recurring/Goals/Settings), 48px touch targets, safe-area-aware, hidden on desktop
+- **Mobile layout audit:** Transaction table overflow-x auto; data strip gap reduced + scrollbar hidden; editorial row actions visible on touch; form-actions flex-wrap; hero overflow-wrap; sheet overflow both axes
+- **Settings restructured:** Profile (new — AuthPanel, guest/signed-in text), Data, Accounts, Cloud (moved from Privacy — includes CloudBackupPanel + McpTokensPanel), Privacy (simplified — local storage, no tracking, data deletion), Legal (reduced)
+- **Import bank statements:** CSV/TSV/TXT file picker → field mapping grid → row preview → Save N transactions button. Wired up on Ledger page as second quick-action button
+- **PWA cache:** Bumped to `openledger-shell-v3` to force fresh install
+- **Accessibility:** All touch targets ≥44px (bottom tabs 48px, form buttons 48px, action buttons 44px). Accent passes WCAG AAA (9.40:1 on white)
+- **Supabase Auth config:** `site_url` fixed from `openledger-two.vercel.app` → `openledgerbysparsh.vercel.app`; `uri_allow_list` updated with all domains and `/auth/callback` paths
+- **OAuth branding audit:** See `docs/oauth-branding-audit.md`
+
+### Known Issues (REQUIRED to fix before releasing v0.9.10)
+1. **Auth callback cookies not persisting** — `src/app/auth/callback/route.ts` was using `next/headers` cookies() which discards session cookies on 302 redirect. FIX PUSHED to main (commit `a50b2c2`) but NOT deployed (Vercel rate-limited). Fix rewrites cookies onto the `NextResponse.redirect()` object directly.
+2. **Vercel deployment rate-limited** — Free plan: 100 deploys/day. Auto-deploy from main will resume when limit resets.
+3. **CSV import preview styling** — The `CsvImportPreview` component renders an unstyled grid that looks ugly. Needs CSS pass.
+4. **PWA service worker cache** — Even after v3 bump, old SW may still control the page. Users need to open in incognito or clear site data.
+
+### What to do when resuming
+1. Wait for Vercel rate limit to reset (~24h from last deploy, roughly 2026-06-25 18:00 UTC)
+2. Push the auth callback fix if not already deployed (it IS on main already)
+3. Verify on production: sign in → profile shows name/email; cloud section appears
+4. Test CSV import end-to-end: import → mapping → save → verify transactions appear
+5. Style the CSV import preview component
+6. Run `npm run lint && npm run typecheck && npm test && npm run build` before promoting
 
 ### Current features
 - Guest mode (default) — no account required, full local functionality
@@ -83,22 +113,23 @@ Releases:
 
 ### Design System (OpenProof Playbook aligned)
 - Editorial layout, no dashboard cards, hierarchy via typography
-- Single accent color (#8B6534), barely-visible borders (0.06 opacity)
+- Single accent color (#7A2F00), barely-visible borders (0.06 opacity)
 - All buttons are pills (999px radius)
-- 4-tab navigation: Ledger, Transactions, Goals, Settings
-- Mobile: bottom tab bar. Desktop: sticky top navbar
+- 5-tab navigation: Ledger, Transactions, Recurring, Goals, Settings
+- Mobile: bottom tab bar (5 icons, 48px targets). Desktop: sticky top navbar
 - Max 1280px content width, 720px for settings/goals narrow pages
 - `<main>` uses `width: 100%` with `max-width: 1280px` (flex-body compat)
 - `.narrow` containers use `max-width: 720px; width: 100%` with `margin-inline: auto`
-- Stack Sans Notch font with Inter fallback from Google Fonts
+- Stack Sans Notch / Noto Sans font with Inter fallback from Google Fonts
 
 ### What does NOT exist yet
 - No automatic cloud sync (must be manually triggered)
-- No MCP server for AI agent data access (build guide at `docs/mcp-server-build-guide.md`)
+- No MCP server for AI agent data access (already built at `apps/mcp/`)
 - No background jobs or scheduled backups
 - No encryption-at-rest for local storage
 - No bank login / Plaid / aggregation
 - No multi-device sync or conflict resolution
+- No PDF bank statement parser (CSV/TSV/TXT only)
 
 ## Architecture Constraints
 
