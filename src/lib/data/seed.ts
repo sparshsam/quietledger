@@ -18,4 +18,5 @@ export const ledgerData: LedgerData = {
   lifeCostEvents: [],
   budgets: [],
   goals: [],
+  recurringEntries: [],
 };

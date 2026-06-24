@@ -20,6 +20,7 @@ export function createDemoLedgerState(): PersistedLedgerState {
     importMetadata: ledgerData.importMetadata ?? [],
     budgets: ledgerData.budgets ?? [],
     goals: ledgerData.goals ?? [],
+    recurringEntries: ledgerData.recurringEntries ?? [],
   };
 }
 
@@ -77,6 +78,7 @@ export function normalizeLedgerBackup(value: unknown, source: "saved" | "backup"
   const rawMetadata = Array.isArray(value.importMetadata) ? value.importMetadata : [];
   const rawBudgets = Array.isArray(value.budgets) ? value.budgets : [];
   const rawGoals = Array.isArray(value.goals) ? value.goals : [];
+  const rawRecurring = Array.isArray(value.recurringEntries) ? value.recurringEntries : [];
 
   const validAccounts = rawAccounts
     .filter(isRecord)
@@ -109,6 +111,20 @@ export function normalizeLedgerBackup(value: unknown, source: "saved" | "backup"
   const validGoals = rawGoals
     .filter(isRecord)
     .filter((g) => typeof g.id === "string" && typeof g.name === "string" && typeof g.targetAmount === "number" && typeof g.currentAmount === "number");
+  const validRecurring = rawRecurring
+    .filter(isRecord)
+    .filter(
+      (r) =>
+        typeof r.id === "string" &&
+        typeof r.description === "string" &&
+        typeof r.amount === "number" &&
+        typeof r.category === "string" &&
+        typeof r.accountId === "string" &&
+        typeof r.frequency === "string" &&
+        typeof r.nextDate === "string" &&
+        typeof r.status === "string" &&
+        typeof r.createdAt === "string",
+    );
 
   const state: PersistedLedgerState = {
     schemaVersion: LEDGER_SCHEMA_VERSION,
@@ -123,6 +139,7 @@ export function normalizeLedgerBackup(value: unknown, source: "saved" | "backup"
     importMetadata: validMetadata.length > 0 ? (validMetadata as PersistedLedgerState["importMetadata"]) : [],
     budgets: validBudgets.length > 0 ? (validBudgets as PersistedLedgerState["budgets"]) : [],
     goals: validGoals.length > 0 ? (validGoals as PersistedLedgerState["goals"]) : [],
+    recurringEntries: validRecurring.length > 0 ? (validRecurring as PersistedLedgerState["recurringEntries"]) : [],
   };
 
   const filteredCount =
@@ -133,7 +150,8 @@ export function normalizeLedgerBackup(value: unknown, source: "saved" | "backup"
     rawForecast.length +
     rawMetadata.length +
     rawBudgets.length +
-    rawGoals.length -
+    rawGoals.length +
+    rawRecurring.length -
     (validAccounts.length +
       validTransactions.length +
       validSnapshots.length +
@@ -141,7 +159,8 @@ export function normalizeLedgerBackup(value: unknown, source: "saved" | "backup"
       validForecast.length +
       validMetadata.length +
       validBudgets.length +
-      validGoals.length);
+      validGoals.length +
+      validRecurring.length);
 
   const warning =
     filteredCount > 0

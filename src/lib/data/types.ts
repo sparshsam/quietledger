@@ -98,6 +98,23 @@ export type Goal = {
   createdAt: string;
 };
 
+export type RecurringFrequency = "weekly" | "monthly" | "custom";
+
+export type RecurringEntry = {
+  id: string;
+  description: string;
+  amount: number;
+  category: string;
+  accountId: string;
+  frequency: RecurringFrequency;
+  intervalDays?: number; // for custom frequency
+  nextDate: string; // ISO date string
+  endDate?: string; // optional end date
+  status: "active" | "paused" | "completed";
+  note?: string;
+  createdAt: string;
+};
+
 export type LedgerData = {
   accounts: Account[];
   transactions: Transaction[];
@@ -109,6 +126,7 @@ export type LedgerData = {
   lifeCostEvents: LifeCostEvent[];
   budgets: Budget[];
   goals: Goal[];
+  recurringEntries?: RecurringEntry[];
 };
 
 export type PersistedLedgerState = {
@@ -122,4 +140,5 @@ export type PersistedLedgerState = {
   importMetadata: ImportMetadata[];
   budgets: Budget[];
   goals: Goal[];
+  recurringEntries: RecurringEntry[];
 };

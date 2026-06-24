@@ -5,10 +5,12 @@
 OpenLedger is a private, local-first finance tool for everyday budgeting and records.
 Built with Next.js + TypeScript. Formerly QuietLedger.
 
-Current Release: v0.9.2 — Account Gateway (2026-06-24)
+Current Release: v0.9.5 — Recurring Entries (2026-06-24)
 
 Releases:
-           v0.9.2 — Account Gateway, landing page, /app route, empty default state
+           v0.9.5 — Recurring Entries, schedule engine, upcoming entries
+           v0.9.4 — Search & Ledger Navigation, global search, Quick Jump
+           v0.9.3 — Cloud Sync Beta, auto-sync, device list, sync now
            v0.9.1 — Google Auth Foundation, auth UX overhaul, device registration, domain cleanup
            v0.9.0 — Supabase Readiness, 3 new tables, RLS hardening, database types
            v0.8.9 — Settings panel consistency, release QA, CSS @import fix
@@ -64,6 +66,9 @@ Releases:
 - Stack Sans Notch typography via Google Fonts
 - Pill-shaped buttons with consistent text-then-icon ordering
 - Expandable settings with details/summary elements and consistent card-panel content areas
+- Cloud Sync Beta — auto-sync, Sync Now, sync status indicator, device list, sync activity history
+- Global search — search descriptions, notes, categories, accounts, amount ranges; saved filters; Quick Jump (Ctrl+K)
+- Recurring entries — monthly/weekly/custom schedules, upcoming entries, skip/pause/resume
 - Finance engine (totals, grouping, insights, trends, budgets, goals) with 50 unit tests
 - Supabase database with 12 migration-managed tables (profiles, accounts, transactions, categories, budgets, goals, imports, audit_events, backups, devices, sync_events, receipts)
 - Typed Supabase client types in `src/lib/supabase/database.types.ts`

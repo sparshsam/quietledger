@@ -57,12 +57,15 @@ import {
 } from "@/lib/data/persistence";
 import { ledgerData } from "@/lib/data/seed";
 import { createScreenshotLedgerData } from "@/lib/data/screenshot-seed";
-import type { Account, AccountKind, Budget, CategoryPattern, Goal, ImportMetadata, LifeCostEvent, MonthlySnapshot, Transaction } from "@/lib/data/types";
+import type { Account, AccountKind, Budget, CategoryPattern, Goal, ImportMetadata, LifeCostEvent, MonthlySnapshot, RecurringEntry, Transaction } from "@/lib/data/types";
 import { PwaRegister } from "@/components/pwa-register";
 import { TransactionsView } from "@/components/transactions-view";
+import { SearchView } from "@/components/search-view";
+import { QuickJump } from "@/components/quick-jump";
 import { GuestModeGuidance, CloudBackupGuidance } from "@/components/empty-states";
 import { BudgetsPanel } from "@/components/budgets-panel";
 import { GoalsPanel } from "@/components/goals-panel";
+import { RecurringPanel } from "@/components/recurring-panel";
 import { DataManagementPanel } from "@/components/data-management-panel";
 import { budgetUtilization, remainingBudget, isOverBudget } from "@/lib/finance/budgets";
 import { goalProgress } from "@/lib/finance/goals";
@@ -72,7 +75,7 @@ const currency = new Intl.NumberFormat("en-CA", {
   currency: "CAD",
 });
 
-const TABS = ["Ledger", "Transactions", "Goals", "Settings"] as const;
+const TABS = ["Ledger", "Transactions", "Recurring", "Goals", "Settings"] as const;
 type Tab = (typeof TABS)[number];
 
 const accountIcons: Record<AccountKind, typeof Banknote> = {
@@ -158,11 +161,14 @@ export default function Home() {
   const [importMetadata, setImportMetadata] = useState<ImportMetadata[]>([]);
   const [budgets, setBudgets] = useState(ledgerData.budgets);
   const [goals, setGoals] = useState(ledgerData.goals);
+  const [recurringEntries, setRecurringEntries] = useState<RecurringEntry[]>(ledgerData.recurringEntries ?? []);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const [storageNotice, setStorageNotice] = useState("Loading local ledger...");
   const [hydrated, setHydrated] = useState(false);
   const screenshotModeRef = useRef(false);
   const [showTxForm, setShowTxForm] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [showQuickJump, setShowQuickJump] = useState(false);
   const [parsedCsv, setParsedCsv] = useState<ParsedCsv | null>(null);
   const [csvFileName, setCsvFileName] = useState("");
   const [csvMapping, setCsvMapping] = useState<CsvMapping>({});
@@ -192,7 +198,7 @@ export default function Home() {
   const nextSaveNoticeRef = useRef<string | null>(null);
 
   const importedTransactions = transactions.filter((transaction) => transaction.source === "csv");
-  const currentLedgerData = { ...ledgerData, accounts, transactions, monthlySnapshots, memories, forecastItems, importMetadata, budgets, goals };
+  const currentLedgerData = { ...ledgerData, accounts, transactions, monthlySnapshots, memories, forecastItems, importMetadata, budgets, goals, recurringEntries };
   const activeAccounts = accounts.filter((account) => !account.archivedAt);
   const accountsWithBalances = useMemo(
     () =>
@@ -268,6 +274,11 @@ export default function Home() {
     [transactions],
   );
 
+  const allCategories = useMemo(
+    () => [...new Set(transactions.map((t) => t.category))].sort(),
+    [transactions],
+  );
+
   useEffect(() => {
     // Screenshot demo mode — loads rich sample data, skips persistence
     const params = new URLSearchParams(window.location.search);
@@ -285,6 +296,7 @@ export default function Home() {
         importMetadata: demo.importMetadata ?? [],
         budgets: demo.budgets,
         goals: demo.goals,
+        recurringEntries: demo.recurringEntries ?? [],
       });
       setTimeout(() => {
         setSelectedMonth("2026-06");
@@ -322,11 +334,26 @@ export default function Home() {
       importMetadata,
       budgets,
       goals,
+      recurringEntries,
     });
     setLastSavedAt(saved.savedAt);
     setStorageNotice(nextSaveNoticeRef.current ?? "Local ledger saved.");
     nextSaveNoticeRef.current = null;
-  }, [accounts, budgets, forecastItems, goals, hydrated, importMetadata, memories, monthlySnapshots, transactions]);
+  }, [accounts, budgets, forecastItems, goals, hydrated, importMetadata, memories, monthlySnapshots, recurringEntries, transactions]);
+
+  // Quick jump keyboard shortcut (Ctrl+K / Cmd+K)
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setShowQuickJump((prev) => !prev);
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   function applyLedgerState(state: ReturnType<typeof createDemoLedgerState>) {
     setAccounts(state.accounts);
@@ -337,6 +364,7 @@ export default function Home() {
     setImportMetadata(state.importMetadata);
     setBudgets(state.budgets);
     setGoals(state.goals);
+    setRecurringEntries(state.recurringEntries);
     setSelectedAccountId(state.accounts[0]?.id ?? "chequing");
     setSelectedMonth(state.monthlySnapshots[0]?.month ?? "2026-05");
   }
@@ -420,12 +448,13 @@ export default function Home() {
     setStorageNotice("Local browser data cleared. Demo fallback is showing.");
   }
 
-  function handleRestoreFromCloud(payload: { accounts: unknown[]; transactions: unknown[]; budgets?: unknown[]; goals?: unknown[] }) {
+  function handleRestoreFromCloud(payload: { accounts: unknown[]; transactions: unknown[]; budgets?: unknown[]; goals?: unknown[]; recurringEntries?: unknown[] }) {
     if (!window.confirm("Replace local ledger with cloud backup? Current local changes will be lost.")) return;
     if (payload.accounts.length > 0) setAccounts(payload.accounts as typeof ledgerData.accounts);
     if (payload.transactions.length > 0) setTransactions(payload.transactions as typeof ledgerData.transactions);
     if (payload.budgets && payload.budgets.length > 0) setBudgets(payload.budgets as typeof ledgerData.budgets);
     if (payload.goals && payload.goals.length > 0) setGoals(payload.goals as typeof ledgerData.goals);
+    if (payload.recurringEntries && payload.recurringEntries.length > 0) setRecurringEntries(payload.recurringEntries as RecurringEntry[]);
     skipNextSaveCountRef.current = 1;
     nextSaveNoticeRef.current = "Local data restored from cloud backup.";
   }
@@ -586,6 +615,21 @@ export default function Home() {
     );
   }
 
+  function saveRecurringEntry(entry: RecurringEntry) {
+    nextSaveNoticeRef.current = "Recurring entry saved locally.";
+    setRecurringEntries((current) =>
+      current.some((e) => e.id === entry.id)
+        ? current.map((e) => (e.id === entry.id ? entry : e))
+        : [...current, entry],
+    );
+  }
+
+  function deleteRecurringEntry(id: string) {
+    if (!window.confirm("Delete this recurring entry?")) return;
+    nextSaveNoticeRef.current = "Recurring entry deleted locally.";
+    setRecurringEntries((current) => current.filter((e) => e.id !== id));
+  }
+
   // Don't SSR — depends on localStorage data and auth state
   if (!hydrated) {
     return (
@@ -618,6 +662,14 @@ export default function Home() {
             </button>
           ))}
         </div>
+        <button
+          className="navbar-search-btn"
+          onClick={() => setShowSearch(true)}
+          aria-label="Search ledger"
+          title="Search ledger"
+        >
+          <Search size={16} />
+        </button>
       </nav>
 
       <main id="main">
@@ -652,6 +704,10 @@ export default function Home() {
               <button className="pill pill-secondary" onClick={() => downloadLedgerExport(currentLedgerData, importedTransactions, importMetadata)} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 Export ledger
                 <Download size={16} />
+              </button>
+              <button className="pill pill-secondary" onClick={() => setActiveTab("Recurring")} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                Recurring entries
+                <ReceiptText size={16} />
               </button>
             </div>
 
@@ -773,6 +829,18 @@ export default function Home() {
           </>
 
         
+        ) : activeTab === "Recurring" ? (
+          <div className="narrow">
+            <RecurringPanel
+              recurringEntries={recurringEntries}
+              accounts={activeAccounts}
+              onAdd={saveRecurringEntry}
+              onUpdate={saveRecurringEntry}
+              onDelete={deleteRecurringEntry}
+            />
+          </div>
+
+
         ) : activeTab === "Goals" ? (
           <div className="narrow">
             <GoalsPanel goals={goals} onSave={saveGoal} onDelete={deleteGoal} onContribute={contributeToGoal} />
@@ -871,6 +939,36 @@ export default function Home() {
       <div className="storage-live-region" aria-live="polite" aria-atomic="true" role="status">
         {storageNotice ? <span className="storage-notice">{storageNotice}</span> : null}
       </div>
+
+      {/* Search overlay */}
+      {showSearch ? (
+        <SearchView
+          transactions={transactions}
+          accounts={accounts}
+          onSelectTransaction={() => setActiveTab("Transactions")}
+          onClose={() => setShowSearch(false)}
+        />
+      ) : null}
+
+      {/* Quick jump navigation */}
+      {showQuickJump ? (
+        <QuickJump
+          tabs={TABS}
+          accounts={accounts}
+          categories={allCategories}
+          onNavigate={(tab) => { setActiveTab(tab as Tab); setShowQuickJump(false); }}
+          onSelectAccount={(id) => {
+            setSelectedAccountId(id);
+            setActiveTab("Transactions");
+            setShowQuickJump(false);
+          }}
+          onSelectCategory={() => {
+            setActiveTab("Transactions");
+            setShowQuickJump(false);
+          }}
+          onClose={() => setShowQuickJump(false)}
+        />
+      ) : null}
     </>
   );
 
