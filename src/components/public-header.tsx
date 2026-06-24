@@ -39,8 +39,6 @@ export function PublicHeader() {
 
         <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
           <NavLink href="/about">About</NavLink>
-          <NavLink href="/privacy">Privacy</NavLink>
-          <NavLink href="/terms">Terms</NavLink>
           <Link
             href="/account"
             style={{

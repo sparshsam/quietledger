@@ -43,6 +43,7 @@ export function AuthPanel({ user, profile, onSignOut }: AuthPanelProps) {
     const supabase = createClient();
     await supabase.auth.signOut();
     onSignOut?.();
+    window.location.href = "/";
   };
 
   // Signed-in state

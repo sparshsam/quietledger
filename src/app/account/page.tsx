@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { PublicHeader } from "@/components/public-header";
+import { PublicFooter } from "@/components/public-footer";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -56,142 +58,144 @@ export default function AccountPage() {
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-        padding: "0 var(--space-lg)",
-      }}
-    >
-      <div style={{ maxWidth: 400, width: "100%" }}>
-        {/* Wordmark */}
-        <Link
-          href="/"
-          style={{
-            display: "block",
-            textAlign: "center",
-            fontSize: 24,
-            fontWeight: 800,
-            color: "var(--text-primary)",
-            textDecoration: "none",
-            marginBottom: 8,
-            letterSpacing: "-0.02em",
-          }}
-        >
-          OpenLedger
-        </Link>
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: 14,
-            color: "var(--text-tertiary)",
-            marginBottom: 40,
-            lineHeight: 1.5,
-          }}
-        >
-          Know where your money went.
-        </p>
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <PublicHeader />
 
-        {/* Google sign-in */}
-        <button
-          onClick={handleGoogleSignIn}
-          disabled={signingIn}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 10,
-            width: "100%",
-            padding: "14px 24px",
-            borderRadius: 999,
-            border: "1px solid var(--border)",
-            background: "var(--surface)",
-            color: "var(--text-primary)",
-            fontSize: 15,
-            fontWeight: 600,
-            cursor: "pointer",
-            minHeight: 48,
-            transition: "background 0.15s",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface-secondary)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "var(--surface)")}
-        >
-          <GoogleIcon />
-          {signingIn ? "Redirecting…" : "Continue with Google"}
-        </button>
-
-        {error ? (
-          <p
+      <main
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "clamp(40px, 6vh, 64px) var(--space-lg)",
+        }}
+      >
+        <div style={{ maxWidth: 400, width: "100%" }}>
+          <h1
             style={{
-              color: "var(--negative)",
-              fontSize: 13,
               textAlign: "center",
-              marginTop: 12,
+              fontSize: 24,
+              fontWeight: 800,
+              color: "var(--text-primary)",
+              margin: "0 0 8px",
+              letterSpacing: "-0.02em",
             }}
           >
-            {error}
+            OpenLedger
+          </h1>
+          <p
+            style={{
+              textAlign: "center",
+              fontSize: 14,
+              color: "var(--text-tertiary)",
+              marginBottom: 40,
+              lineHeight: 1.5,
+            }}
+          >
+            Know where your money went.
           </p>
-        ) : null}
 
-        {/* Divider */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 16,
-            margin: "28px 0",
-            color: "var(--text-tertiary)",
-            fontSize: 12,
-          }}
-        >
-          <span style={{ flex: 1, height: 1, background: "var(--border)" }} />
-          <span>or</span>
-          <span style={{ flex: 1, height: 1, background: "var(--border)" }} />
+          {/* Google sign-in */}
+          <button
+            onClick={handleGoogleSignIn}
+            disabled={signingIn}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              width: "100%",
+              padding: "14px 24px",
+              borderRadius: 999,
+              border: "1px solid var(--border)",
+              background: "var(--surface)",
+              color: "var(--text-primary)",
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: "pointer",
+              minHeight: 48,
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface-secondary)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "var(--surface)")}
+          >
+            <GoogleIcon />
+            {signingIn ? "Redirecting…" : "Continue with Google"}
+          </button>
+
+          {error ? (
+            <p
+              style={{
+                color: "var(--negative)",
+                fontSize: 13,
+                textAlign: "center",
+                marginTop: 12,
+              }}
+            >
+              {error}
+            </p>
+          ) : null}
+
+          {/* Divider */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 16,
+              margin: "28px 0",
+              color: "var(--text-tertiary)",
+              fontSize: 12,
+            }}
+          >
+            <span style={{ flex: 1, height: 1, background: "var(--border)" }} />
+            <span>or</span>
+            <span style={{ flex: 1, height: 1, background: "var(--border)" }} />
+          </div>
+
+          {/* Guest entry */}
+          <Link
+            href="/app"
+            style={{
+              display: "block",
+              textAlign: "center",
+              padding: "14px 24px",
+              borderRadius: 999,
+              border: "1px solid var(--border)",
+              color: "var(--text-secondary)",
+              fontSize: 14,
+              fontWeight: 500,
+              textDecoration: "none",
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--surface-secondary)";
+              e.currentTarget.style.color = "var(--text-primary)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--text-secondary)";
+            }}
+          >
+            Try without account
+          </Link>
+
+          <p
+            style={{
+              textAlign: "center",
+              fontSize: 12,
+              color: "var(--text-tertiary)",
+              marginTop: 24,
+              lineHeight: 1.5,
+            }}
+          >
+            No account needed to start. Your data stays on this device until you
+            choose to sign in.
+          </p>
         </div>
+      </main>
 
-        {/* Guest entry */}
-        <Link
-          href="/app"
-          style={{
-            display: "block",
-            textAlign: "center",
-            padding: "14px 24px",
-            borderRadius: 999,
-            border: "1px solid var(--border)",
-            color: "var(--text-secondary)",
-            fontSize: 14,
-            fontWeight: 500,
-            textDecoration: "none",
-            transition: "background 0.15s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--surface-secondary)";
-            e.currentTarget.style.color = "var(--text-primary)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.color = "var(--text-secondary)";
-          }}
-        >
-          Try without account
-        </Link>
-
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: 12,
-            color: "var(--text-tertiary)",
-            marginTop: 24,
-            lineHeight: 1.5,
-          }}
-        >
-          No account needed to start. Your data stays on this device until you
-          choose to sign in.
-        </p>
-      </div>
+      <PublicFooter />
     </div>
   );
 }

@@ -30,7 +30,7 @@
   --negative: #C44A4A;
 
   /* Typography */
-  --font-sans: "Stack Sans Notch", var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Noto Sans", var(--font-noto), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-serif: Georgia, "Times New Roman", serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Code", monospace;
 

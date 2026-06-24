@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Noto_Sans } from "next/font/google";
 import "./globals.css";
 import { AnalyticsTracker } from "@/components/analytics-tracker";
 
-const inter = Inter({
-  variable: "--font-inter",
+const noto = Noto_Sans({
+  variable: "--font-noto",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -84,16 +85,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className="h-full antialiased"
-    >
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Stack+Sans+Notch:wght@400;500;600;700;800&display=swap" />
-      </head>
-      <body className="min-h-full flex flex-col">
+      <html lang="en" className={`${noto.variable} h-full antialiased`}>
+        <head />
+        <body className="min-h-full flex flex-col">
         {children}
         <AnalyticsTracker />
       </body>
