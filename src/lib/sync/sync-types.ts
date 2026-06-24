@@ -11,3 +11,14 @@ export type SyncEvent = {
   recordsCount: number;
   errorMessage?: string;
 };
+
+export type ConflictRecord = {
+  id: string;
+  timestamp: string;
+  entityType: "transaction" | "account" | "budget" | "goal";
+  entityId: string;
+  localVersion: unknown;
+  remoteVersion: unknown;
+  resolution?: "local_wins" | "remote_wins" | "manual";
+  resolvedAt?: string;
+};

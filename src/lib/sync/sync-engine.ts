@@ -10,7 +10,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { uploadBackup } from "@/lib/supabase/backup";
-import type { SyncStatus, SyncEvent } from "./sync-types";
+import type { SyncStatus, SyncEvent, ConflictRecord } from "./sync-types";
 
 const LAST_SYNC_KEY = "openledger.lastSync";
 const SYNC_LOG_KEY = "openledger.syncLog";
@@ -279,10 +279,253 @@ export async function syncNow(): Promise<{ ok: true } | { ok: false; error: stri
  * Register the app version for sync tracking.
  */
 export function getAppVersion(): string {
-  if (typeof document === "undefined") return "0.9.3";
+  if (typeof document === "undefined") return "0.9.7";
   return (
     document
       .querySelector('meta[name="application-version"]')
-      ?.getAttribute("content") ?? "0.9.3"
+      ?.getAttribute("content") ?? "0.9.7"
   );
+}
+
+// ── Conflict Detection ────────────────────────────────
+
+const CONFLICT_LOG_KEY = "openledger.conflictLog";
+
+/**
+ * Compare local vs remote backup data to detect conflicts.
+ * For each entity type, compares entities by ID and flags differences.
+ */
+export function detectConflicts(
+  localState: { accounts: unknown[]; transactions: unknown[]; budgets: unknown[]; goals: unknown[] },
+  remoteState: { accounts: unknown[]; transactions: unknown[]; budgets: unknown[]; goals: unknown[] },
+): ConflictRecord[] {
+  const conflicts: ConflictRecord[] = [];
+  const now = new Date().toISOString();
+
+  function compareEntities(
+    entityType: ConflictRecord["entityType"],
+    localEntities: unknown[],
+    remoteEntities: unknown[],
+  ) {
+    const remoteMap = new Map<string, unknown>();
+    for (const entity of remoteEntities) {
+      const e = entity as Record<string, unknown>;
+      if (typeof e.id === "string") remoteMap.set(e.id, entity);
+    }
+
+    for (const localEntity of localEntities) {
+      const l = localEntity as Record<string, unknown>;
+      if (typeof l.id !== "string") continue;
+
+      const remoteEntity = remoteMap.get(l.id);
+      if (!remoteEntity) {
+        // Entity exists locally but not remotely — flag as conflict
+        conflicts.push({
+          id: generateShortId(),
+          timestamp: now,
+          entityType,
+          entityId: l.id,
+          localVersion: localEntity,
+          remoteVersion: null,
+        });
+        continue;
+      }
+
+      // Compare serialized versions
+      const localStr = JSON.stringify(localEntity, Object.keys(localEntity as object).sort());
+      const remoteStr = JSON.stringify(remoteEntity, Object.keys(remoteEntity as object).sort());
+      if (localStr !== remoteStr) {
+        conflicts.push({
+          id: generateShortId(),
+          timestamp: now,
+          entityType,
+          entityId: l.id,
+          localVersion: localEntity,
+          remoteVersion: remoteEntity,
+        });
+      }
+    }
+
+    // Check for entities only in remote
+    const localIdSet = new Set<string>();
+    for (const entity of localEntities) {
+      const e = entity as Record<string, unknown>;
+      if (typeof e.id === "string") localIdSet.add(e.id);
+    }
+    for (const entity of remoteEntities) {
+      const r = entity as Record<string, unknown>;
+      if (typeof r.id !== "string") continue;
+      if (!localIdSet.has(r.id)) {
+        conflicts.push({
+          id: generateShortId(),
+          timestamp: now,
+          entityType,
+          entityId: r.id,
+          localVersion: null,
+          remoteVersion: entity,
+        });
+      }
+    }
+  }
+
+  compareEntities("transaction", localState.transactions, remoteState.transactions);
+  compareEntities("account", localState.accounts, remoteState.accounts);
+  compareEntities("budget", localState.budgets, remoteState.budgets);
+  compareEntities("goal", localState.goals, remoteState.goals);
+
+  return conflicts;
+}
+
+/**
+ * Log a conflict record to the localStorage conflict log.
+ */
+export function logConflict(conflict: Omit<ConflictRecord, "id" | "timestamp">): void {
+  if (typeof window === "undefined") return;
+  try {
+    const log = getConflictLog();
+    const record: ConflictRecord = {
+      ...conflict,
+      id: generateShortId(),
+      timestamp: new Date().toISOString(),
+    };
+    log.unshift(record);
+    localStorage.setItem(CONFLICT_LOG_KEY, JSON.stringify(log.slice(0, 50)));
+  } catch {
+    // Silently fail
+  }
+}
+
+/**
+ * Read the full conflict log from localStorage.
+ */
+export function getConflictLog(): ConflictRecord[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(CONFLICT_LOG_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw) as ConflictRecord[];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Clear the conflict log from localStorage.
+ */
+export function clearConflictLog(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(CONFLICT_LOG_KEY);
+  } catch {
+    // Silently fail
+  }
+}
+
+// ── Device Management ─────────────────────────────────
+
+/**
+ * Rename a registered device.
+ */
+export async function renameDevice(
+  deviceId: string,
+  newName: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!newName || newName.trim().length === 0) {
+    return { ok: false, error: "Device name cannot be empty" };
+  }
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("openledger_devices")
+    .update({ device_name: newName.trim() })
+    .eq("id", deviceId);
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+  return { ok: true };
+}
+
+/**
+ * Remove (unlink) a registered device.
+ */
+export async function removeDevice(
+  deviceId: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("openledger_devices")
+    .delete()
+    .eq("id", deviceId);
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+  return { ok: true };
+}
+
+// ── Force Re-sync ─────────────────────────────────────
+
+/**
+ * Force a re-sync by clearing the last sync timestamp and running syncNow().
+ */
+export async function forceResync(): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.removeItem(LAST_SYNC_KEY);
+    } catch {
+      // Silently fail
+    }
+  }
+  return syncNow();
+}
+
+// ── Diagnostics ───────────────────────────────────────
+
+/**
+ * Gather all sync health diagnostics in one call.
+ */
+export async function getSyncDiagnostics(): Promise<{
+  lastSync: string | null;
+  pendingChanges: number;
+  deviceCount: number;
+  remoteEventCount: number;
+  syncEvents: SyncEvent[];
+  conflicts: ConflictRecord[];
+}> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let deviceCount = 0;
+  let remoteEventCount = 0;
+
+  if (user) {
+    const { count: dCount } = await supabase
+      .from("openledger_devices")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id);
+    deviceCount = dCount ?? 0;
+
+    const { count: eCount } = await supabase
+      .from("openledger_sync_events")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id);
+    remoteEventCount = eCount ?? 0;
+  }
+
+  return {
+    lastSync: getLastSync(),
+    pendingChanges: getPendingChangeCount(),
+    deviceCount,
+    remoteEventCount,
+    syncEvents: getCachedSyncLog(),
+    conflicts: getConflictLog(),
+  };
+}
+
+// ── Helpers ───────────────────────────────────────────
+
+function generateShortId(): string {
+  return Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
 }

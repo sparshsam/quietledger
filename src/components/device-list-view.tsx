@@ -6,12 +6,14 @@
  *
  * Shows device_name, device_type, last_sync_at, and marks the current
  * browser as the "current device" with a subtle indicator.
+ * Supports inline rename and remove with confirmation.
  */
 
 import { useEffect, useState } from "react";
-import { Monitor, Smartphone, Laptop, CheckCircle2 } from "lucide-react";
+import { Monitor, Smartphone, Laptop, CheckCircle2, Edit3, Trash2, Check, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/supabase/auth-hook";
+import { renameDevice, removeDevice } from "@/lib/sync/sync-engine";
 
 type DeviceRow = {
   id: string;
@@ -58,6 +60,14 @@ export function DeviceListView() {
   const [devices, setDevices] = useState<DeviceRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDeviceId] = useState(() => computeCurrentDeviceId());
+  const [message, setMessage] = useState<string | null>(null);
+
+  // Device rename state
+  const [editingDeviceId, setEditingDeviceId] = useState<string | null>(null);
+  const [editDeviceName, setEditDeviceName] = useState("");
+
+  // Device removal confirmation
+  const [removingDeviceId, setRemovingDeviceId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -86,6 +96,33 @@ export function DeviceListView() {
     return () => { cancelled = true; };
   }, [user]);
 
+  const handleRename = async (deviceId: string) => {
+    const result = await renameDevice(deviceId, editDeviceName);
+    if (result.ok) {
+      setDevices((prev) =>
+        prev.map((d) =>
+          d.id === deviceId ? { ...d, device_name: editDeviceName } : d,
+        ),
+      );
+      setEditingDeviceId(null);
+      setEditDeviceName("");
+      setMessage(null);
+    } else {
+      setMessage(`Rename failed: ${result.error}`);
+    }
+  };
+
+  const handleRemove = async (deviceId: string) => {
+    const result = await removeDevice(deviceId);
+    if (result.ok) {
+      setDevices((prev) => prev.filter((d) => d.id !== deviceId));
+      setRemovingDeviceId(null);
+      setMessage(null);
+    } else {
+      setMessage(`Remove failed: ${result.error}`);
+    }
+  };
+
   if (!user) {
     return (
       <div>
@@ -107,98 +144,246 @@ export function DeviceListView() {
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 2,
-      }}
-    >
-      {devices.map((d) => {
-        const isCurrent = d.device_id === currentDeviceId;
-        return (
-          <div
-            key={d.id}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              padding: "10px 0",
-              borderBottom: "1px solid var(--border)",
-            }}
-          >
-            {/* Device icon */}
+    <div>
+      {message ? (
+        <p style={{ fontSize: 12, color: "#C0392B", marginBottom: 8 }}>{message}</p>
+      ) : null}
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        {devices.map((d) => {
+          const isCurrent = d.device_id === currentDeviceId;
+          const isEditing = editingDeviceId === d.id;
+          const isConfirmingRemove = removingDeviceId === d.id;
+
+          return (
             <div
+              key={d.id}
               style={{
-                width: 36,
-                height: 36,
-                borderRadius: 8,
-                background: "var(--surface)",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
+                gap: 12,
+                padding: "10px 0",
+                borderBottom: "1px solid var(--border)",
               }}
             >
-              {d.device_type === "mobile" ? (
-                <Smartphone size={18} style={{ color: "var(--text-tertiary)" }} />
-              ) : d.device_type === "tablet" ? (
-                <Laptop size={18} style={{ color: "var(--text-tertiary)" }} />
-              ) : (
-                <Monitor size={18} style={{ color: "var(--text-tertiary)" }} />
-              )}
-            </div>
-
-            {/* Device info */}
-            <div style={{ flex: 1, minWidth: 0 }}>
+              {/* Device icon */}
               <div
                 style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 8,
+                  background: "var(--surface)",
                   display: "flex",
                   alignItems: "center",
-                  gap: 6,
-                  fontWeight: 600,
-                  fontSize: 14,
-                  color: "var(--text-primary)",
+                  justifyContent: "center",
+                  flexShrink: 0,
                 }}
               >
-                {d.device_name}
-                {isCurrent ? (
-                  <span
+                {d.device_type === "mobile" ? (
+                  <Smartphone size={18} style={{ color: "var(--text-tertiary)" }} />
+                ) : d.device_type === "tablet" ? (
+                  <Laptop size={18} style={{ color: "var(--text-tertiary)" }} />
+                ) : (
+                  <Monitor size={18} style={{ color: "var(--text-tertiary)" }} />
+                )}
+              </div>
+
+              {/* Device info */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {isEditing ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <input
+                      type="text"
+                      value={editDeviceName}
+                      onChange={(e) => setEditDeviceName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleRename(d.id);
+                        if (e.key === "Escape") { setEditingDeviceId(null); setEditDeviceName(""); }
+                      }}
+                      autoFocus
+                      style={{
+                        flex: 1,
+                        padding: "4px 8px",
+                        borderRadius: 6,
+                        border: "1px solid var(--border)",
+                        fontSize: 13,
+                        background: "var(--bg)",
+                        color: "var(--text-primary)",
+                        outline: "none",
+                        maxWidth: 200,
+                      }}
+                    />
+                    <button
+                      onClick={() => handleRename(d.id)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 2,
+                        color: "#2E7D32",
+                      }}
+                      title="Save"
+                    >
+                      <Check size={14} />
+                    </button>
+                    <button
+                      onClick={() => { setEditingDeviceId(null); setEditDeviceName(""); }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 2,
+                        color: "var(--text-tertiary)",
+                      }}
+                      title="Cancel"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <div
                     style={{
-                      display: "inline-flex",
+                      display: "flex",
                       alignItems: "center",
-                      gap: 3,
-                      fontSize: 10,
+                      gap: 6,
                       fontWeight: 600,
-                      color: "#2E7D32",
-                      background: "#E8F5E9",
-                      padding: "1px 6px",
-                      borderRadius: 999,
-                      lineHeight: "16px",
+                      fontSize: 14,
+                      color: "var(--text-primary)",
                     }}
                   >
-                    <CheckCircle2 size={10} />
-                    This device
+                    {d.device_name}
+                    {isCurrent && (
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 3,
+                          fontSize: 10,
+                          fontWeight: 600,
+                          color: "#2E7D32",
+                          background: "#E8F5E9",
+                          padding: "1px 6px",
+                          borderRadius: 999,
+                          lineHeight: "16px",
+                        }}
+                      >
+                        <CheckCircle2 size={10} />
+                        This device
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {!isEditing && (
+                  <span
+                    style={{
+                      fontSize: 12,
+                      color: "var(--text-tertiary)",
+                      display: "block",
+                      marginTop: 2,
+                    }}
+                  >
+                    {d.device_type === "web" ? "Web browser" : d.device_type ?? "Unknown"}
+                    {d.last_sync_at
+                      ? ` — Last sync: ${formatTime(d.last_sync_at)}`
+                      : " — Never synced"}
                   </span>
-                ) : null}
+                )}
               </div>
-              <span
-                style={{
-                  fontSize: 12,
-                  color: "var(--text-tertiary)",
-                  display: "block",
-                  marginTop: 2,
-                }}
-              >
-                {d.device_type === "web" ? "Web browser" : d.device_type ?? "Unknown"}
-                {d.last_sync_at
-                  ? ` — Last sync: ${formatTime(d.last_sync_at)}`
-                  : " — Never synced"}
-              </span>
+
+              {/* Action buttons */}
+              {!isEditing && !isConfirmingRemove && (
+                <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                  <button
+                    onClick={() => {
+                      setEditingDeviceId(d.id);
+                      setEditDeviceName(d.device_name);
+                    }}
+                    style={{
+                      background: "none",
+                      border: "1px solid var(--border)",
+                      cursor: "pointer",
+                      padding: "4px 8px",
+                      borderRadius: 6,
+                      color: "var(--text-tertiary)",
+                      fontSize: 11,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
+                    title="Rename device"
+                  >
+                    <Edit3 size={12} />
+                    Rename
+                  </button>
+                  <button
+                    onClick={() => setRemovingDeviceId(d.id)}
+                    style={{
+                      background: "none",
+                      border: "1px solid rgba(192, 57, 43, 0.3)",
+                      cursor: "pointer",
+                      padding: "4px 8px",
+                      borderRadius: 6,
+                      color: "#C0392B",
+                      fontSize: 11,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
+                    title="Remove device"
+                  >
+                    <Trash2 size={12} />
+                    Remove
+                  </button>
+                </div>
+              )}
+
+              {/* Confirmation dialog */}
+              {isConfirmingRemove && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                  <span style={{ fontSize: 12, color: "#C0392B", whiteSpace: "nowrap" }}>
+                    Remove {d.device_name}?
+                  </span>
+                  <button
+                    onClick={() => handleRemove(d.id)}
+                    style={{
+                      background: "#C0392B",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 999,
+                      padding: "3px 12px",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Remove
+                  </button>
+                  <button
+                    onClick={() => setRemovingDeviceId(null)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 2,
+                      color: "var(--text-tertiary)",
+                      fontSize: 11,
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

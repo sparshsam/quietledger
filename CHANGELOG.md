@@ -2,6 +2,15 @@
 
 All notable changes to OpenLedger will be documented here.
 
+## 0.9.8 — 2026-06-24
+
+- **Security audit release.** No feature changes.
+- **Dependency audit:** Scanned all runtime and dev dependencies. No unused dependencies found. Three moderate npm vulnerabilities cataloged (all transitive, no runtime exposure).
+- **Supabase RLS audit:** Verified all 12 `openledger_*` tables have RLS enabled and all policies correctly scope data to `auth.uid() = user_id`.
+- **Storage policy fix:** Replaced deprecated `auth.role()` with `auth.uid() IS NOT NULL` in `openledger-receipts` storage bucket policies (SELECT, INSERT, DELETE). Applied via migration `20260624000001`.
+- **Environment audit:** `.env.example` verified complete. No secrets committed to `.env`.
+- **New document:** `docs/security-audit.md` — comprehensive security audit report.
+
 ## 0.9.2 — 2026-06-24
 
 - **Account Gateway:** App restructured with public landing page (`/`), auth gateway (`/account`), and ledger app (`/app`).
