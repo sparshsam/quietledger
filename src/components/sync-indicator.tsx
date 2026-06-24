@@ -60,12 +60,12 @@ export function SyncIndicator() {
 
   const dotColor =
     status === "syncing"
-      ? "#D4A72C"
+      ? "var(--warning)"
       : status === "error"
-        ? "#C0392B"
+        ? "var(--negative)"
         : status === "pending"
-          ? "#8B6534"
-          : "#2E7D32";
+          ? "var(--accent)"
+          : "var(--positive)";
 
   return (
     <div

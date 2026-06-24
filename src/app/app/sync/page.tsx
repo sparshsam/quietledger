@@ -333,11 +333,11 @@ export default function SyncPage() {
             >
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                 {status === "syncing" ? (
-                  <RefreshCw size={20} style={{ animation: "spin 1s linear infinite", color: "#D4A72C" }} />
+                  <RefreshCw size={20} style={{ animation: "spin 1s linear infinite", color: "var(--warning)" }} />
                 ) : status === "error" ? (
-                  <AlertCircle size={20} style={{ color: "#C0392B" }} />
+                  <AlertCircle size={20} style={{ color: "var(--negative)" }} />
                 ) : (
-                  <Cloud size={20} style={{ color: pending > 0 ? "#8B6534" : "#2E7D32" }} />
+                  <Cloud size={20} style={{ color: pending > 0 ? "var(--accent)" : "var(--positive)" }} />
                 )}
                 <span style={{ fontWeight: 600, fontSize: 16, color: "var(--text-primary)" }}>
                   {status === "syncing"
@@ -736,8 +736,7 @@ export default function SyncPage() {
                           <span
                             style={{
                               fontSize: 10,
-                              color: "#8B6534",
-                              background: "rgba(139, 101, 52, 0.1)",
+                              color: "var(--accent)",
                               padding: "1px 6px",
                               borderRadius: 999,
                               marginLeft: "auto",

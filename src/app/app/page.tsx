@@ -6,7 +6,9 @@ export const dynamic = "force-dynamic";
 import {
   Archive,
   ArrowRight,
+  ArrowRightLeft,
   Banknote,
+  BookOpen,
   CheckCircle2,
   ChevronRight,
   CircleDollarSign,
@@ -20,11 +22,13 @@ import {
   PiggyBank,
   Plus,
   ReceiptText,
+  Repeat,
   Search,
   Settings,
   ShieldCheck,
   Sparkles,
   Tag,
+  Target,
   Trash2,
   Upload,
   WalletCards,
@@ -868,7 +872,25 @@ export default function Home() {
         
         ) : activeTab === "Settings" ? (
           <div className="narrow">
+            {/* Profile */}
             <details className="settings-section" open>
+              <summary>Profile</summary>
+              <div className="settings-section-content">
+                <div className="settings-panel-content">
+                  <div className="settings-panel-section">
+                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>
+                      {authMode === "signed-in"
+                        ? "You are signed in with Google. Cloud backup is available."
+                        : "You are using OpenLedger in guest mode. All features work locally."}
+                    </p>
+                    <AuthPanel user={user} profile={profile} onSignOut={() => {}} />
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            {/* Data */}
+            <details className="settings-section">
               <summary>Data</summary>
               <div className="settings-section-content">
                 <div className="settings-panel-content">
@@ -880,6 +902,7 @@ export default function Home() {
               </div>
             </details>
 
+            {/*Accounts */}
             <details className="settings-section">
               <summary>Accounts</summary>
               <div className="settings-section-content">
@@ -895,6 +918,28 @@ export default function Home() {
               </div>
             </details>
 
+            {/*Cloud */}
+            {authMode === "signed-in" ? (
+              <details className="settings-section">
+                <summary>Cloud</summary>
+                <div className="settings-section-content">
+                  <div className="settings-panel-content">
+                    <div className="settings-panel-section">
+                      <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>
+                        Back up and restore your ledger across devices.
+                      </p>
+                      <CloudBackupPanel user={user} ledgerData={{ accounts, transactions, budgets, goals }} onRestore={handleRestoreFromCloud} />
+                    </div>
+                    <div className="settings-panel-section">
+                      <div className="settings-panel-heading">MCP Access</div>
+                      <McpTokensPanel />
+                    </div>
+                  </div>
+                </div>
+              </details>
+            ) : null}
+
+            {/*Privacy */}
             <details className="settings-section">
               <summary>Privacy</summary>
               <div className="settings-section-content">
@@ -903,66 +948,44 @@ export default function Home() {
                     <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>
                       OpenLedger is <strong>local-first by design</strong>. Your data lives in this browser and never leaves without your explicit action.
                     </p>
-
                     <div className="privacy-modes" style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 20 }}>
                       <div style={{ marginBottom: 12 }}>
-                        <strong style={{ color: 'var(--text-primary)' }}>Guest Mode</strong>
-                        <br />Default. All features work without an account. Data is stored in this browser only.
+                        <strong style={{ color: 'var(--text-primary)' }}>Local Storage</strong>
+                        <br />All data stays in your browser unless you choose to back it up.
                       </div>
                       <div style={{ marginBottom: 12 }}>
-                        <strong style={{ color: 'var(--text-primary)' }}>Google Account</strong>
-                        <br />Optional sign-in. Enables cloud backup. Your local data stays in this browser — only what you upload leaves.
+                        <strong style={{ color: 'var(--text-primary)' }}>No Tracking</strong>
+                        <br />OpenLedger has no analytics, no telemetry, and no third-party data collection.
                       </div>
                       <div>
-                        <strong style={{ color: 'var(--text-primary)' }}>Cloud Features</strong>
-                        <br />Manual backup and restore. Never automatic. You control every upload and deletion.
+                        <strong style={{ color: 'var(--text-primary)' }}>Data Deletion</strong>
+                        <br />You can delete all local data at any time from the Data section. Cloud data can be deleted from the Cloud section.
                       </div>
                     </div>
-
-                    {authMode === "signed-in" ? (
-                      <div style={{ marginBottom: 16 }}>
-                        <CloudBackupPanel user={user} ledgerData={{ accounts, transactions, budgets, goals }} onRestore={handleRestoreFromCloud} />
-                      </div>
-                    ) : null}
-
-                    <AuthPanel user={user} profile={profile} onSignOut={() => {}} />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                      <a href="/privacy" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Privacy Policy</a>
+                      <a href="/terms" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Terms of Service</a>
+                    </div>
                   </div>
                 </div>
               </div>
             </details>
 
-            {authMode === "signed-in" ? (
-              <details className="settings-section">
-                <summary>MCP Access</summary>
-                <div className="settings-section-content">
-                  <div className="settings-panel-content">
-                    <div className="settings-panel-section">
-                      <McpTokensPanel />
-                    </div>
-                  </div>
-                </div>
-              </details>
-            ) : null}
-
+            {/*Legal */}
             <details className="settings-section">
               <summary>Legal</summary>
               <div className="settings-section-content">
                 <div className="settings-panel-content">
                   <div className="settings-panel-section">
-                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>Policies and terms.</p>
+                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>Open source and support.</p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      <a href="/privacy" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Privacy Policy</a>
-                      <a href="/terms" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Terms of Service</a>
                       <a href="/support" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Support</a>
+                      <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>OpenLedger is free and open-source under AGPL-3.0.</span>
                     </div>
                   </div>
                 </div>
               </div>
             </details>
-
-            <div style={{ textAlign: 'center', marginTop: 'var(--space-3xl)', fontSize: 12, color: 'var(--text-tertiary)' }}>
-              OpenLedger \u2022 Free &amp; open-source \u2022 AGPL-3.0
-            </div>
           </div>
         ) : null}
       </main>
@@ -1001,6 +1024,30 @@ export default function Home() {
           onClose={() => setShowQuickJump(false)}
         />
       ) : null}
+
+      {/* Mobile bottom tab bar */}
+      <nav className="bottom-tabs" aria-label="Bottom navigation">
+        {TABS.map((tab) => {
+          const icons: Record<string, React.ReactNode> = {
+            Ledger: <BookOpen size={20} />,
+            Transactions: <ArrowRightLeft size={20} />,
+            Recurring: <Repeat size={20} />,
+            Goals: <Target size={20} />,
+            Settings: <Settings size={20} />,
+          };
+          return (
+            <button
+              key={tab}
+              className={'bottom-tab-item' + (activeTab === tab ? ' active' : '')}
+              onClick={() => setActiveTab(tab)}
+              aria-current={activeTab === tab ? "page" : undefined}
+            >
+              {icons[tab]}
+              <span className="bottom-tab-label">{tab}</span>
+            </button>
+          );
+        })}
+      </nav>
     </>
   );
 

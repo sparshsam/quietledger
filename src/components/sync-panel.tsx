@@ -442,8 +442,7 @@ export function SyncPanel() {
                         style={{
                           marginLeft: 8,
                           fontSize: 10,
-                          color: "#8B6534",
-                          background: "rgba(139, 101, 52, 0.1)",
+                          color: "var(--accent)",
                           padding: "1px 6px",
                           borderRadius: 999,
                         }}
