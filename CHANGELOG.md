@@ -2,6 +2,16 @@
 
 All notable changes to OpenLedger will be documented here.
 
+## 0.9.9 — 2026-06-24
+
+- **MCP Server.** AI agents can now read/write OpenLedger data via the Model Context Protocol.
+- **30 tools** across 7 domains: accounts (6), transactions (5), categories (2), budgets (4), goals (5), dashboard (4), search (2).
+- **Token auth:** SHA-256 hashed access tokens with Settings UI for create/list/revoke.
+- **User isolation:** Service-role client with application-layer `.eq("user_id", userId)` on every query. Ownership pre-checks on all mutations.
+- **API endpoints:** `GET/POST/DELETE /api/mcp/tokens` for token management.
+- **New doc:** `docs/mcp-server-setup.md` — end-user setup guide for connecting AI agents.
+- **New table:** `openledger_mcp_tokens` migration applied.
+
 ## 0.9.8 — 2026-06-24
 
 - **Security audit release.** No feature changes.

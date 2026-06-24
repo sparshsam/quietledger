@@ -68,6 +68,7 @@ import { GoalsPanel } from "@/components/goals-panel";
 import { RecurringPanel } from "@/components/recurring-panel";
 import { ReceiptGallery } from "@/components/receipt-gallery";
 import { DataManagementPanel } from "@/components/data-management-panel";
+import { McpTokensPanel } from "@/components/mcp-tokens-panel";
 import { budgetUtilization, remainingBudget, isOverBudget } from "@/lib/finance/budgets";
 import { goalProgress } from "@/lib/finance/goals";
 
@@ -929,6 +930,19 @@ export default function Home() {
                 </div>
               </div>
             </details>
+
+            {authMode === "signed-in" ? (
+              <details className="settings-section">
+                <summary>MCP Access</summary>
+                <div className="settings-section-content">
+                  <div className="settings-panel-content">
+                    <div className="settings-panel-section">
+                      <McpTokensPanel />
+                    </div>
+                  </div>
+                </div>
+              </details>
+            ) : null}
 
             <details className="settings-section">
               <summary>Legal</summary>

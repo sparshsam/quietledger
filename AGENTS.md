@@ -27,6 +27,24 @@ v0.9.8 — Sync hardening, data integrity, security audit (76 tests). Live at ht
 | v0.8.5 | Removed duplicate TransactionTable, fixed Settings width, fixed Goals button icon |
 | v0.8.4 | Visual QA — goals panel rewrite (editorial cards, modal form, pill actions) |
 
+## MCP Server (v0.9.9)
+
+OpenLedger ships with an MCP server (`apps/mcp/`) that exposes 30 tools for AI agents to read/write financial data. Key design:
+
+- **Token auth:** SHA-256 hashed access tokens stored in `openledger_mcp_tokens` table.
+- **Service role client:** Bypasses RLS — user isolation enforced in application code via `.eq("user_id", userId)` on every query.
+- **Ownership checks:** Every update/delete pre-checks ownership before mutating.
+- **30 tools** across 7 domains: accounts, transactions, categories, budgets, goals, dashboard, search.
+- **Server entry:** `apps/mcp/src/index.ts` — authenticates at startup, registers all tools, connects via stdio.
+
+### To use the MCP server
+
+1. Generate a token from OpenLedger Settings → MCP Access.
+2. Build: `cd apps/mcp && npm install && npm run build`
+3. Add to your AI agent's MCP configuration with env vars for `OPENLEDGER_ACCESS_TOKEN`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.
+
+**See:** `docs/mcp-server-setup.md` for full setup guide.
+
 ## Rules
 
 1. **Local-first.** Do not add backend services, authentication, or cloud sync.

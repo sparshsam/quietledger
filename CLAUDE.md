@@ -5,9 +5,10 @@
 OpenLedger is a private, local-first finance tool for everyday budgeting and records.
 Built with Next.js + TypeScript. Formerly QuietLedger.
 
-Current Release: v0.9.8 — Sync Hardening & Security Audit (2026-06-24)
+Current Release: v0.9.9 — MCP Server (2026-06-24)
 
 Releases:
+           v0.9.9 — MCP Server, 30 AI agent tools, token auth, 76 tests
            v0.9.8 — Sync hardening, data integrity, security audit, 76 tests
            v0.9.7 — Conflict detection, device management, force re-sync, diagnostics
            v0.9.6 — Receipt capture, Supabase Storage, photo upload, camera, gallery
@@ -145,8 +146,12 @@ npx vercel deploy --prod  # Deploy to Vercel
 | `src/components/goals-panel.tsx` | Goal CRUD, progress tracking, contributions |
 | `src/components/empty-states.tsx` | Shared empty state components |
 | `supabase/migrations/` | SQL migrations (3 files) |
+| `apps/mcp/` | MCP server for AI agent access (30 tools, token auth) |
+| `src/components/mcp-tokens-panel.tsx` | MCP token management UI in Settings |
+| `src/app/api/mcp/tokens/` | MCP token CRUD API endpoints |
 | `docs/design-playbook.md` | Editorial UI design system reference |
 | `docs/mcp-server-build-guide.md` | MCP server blueprint for AI agent access |
+| `docs/mcp-server-setup.md` | End-user setup guide for connecting AI agents |
 
 ## Branch Naming
 

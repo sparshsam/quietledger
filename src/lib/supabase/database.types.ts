@@ -144,6 +144,18 @@ export interface DbSyncEvent {
   created_at: string;
 }
 
+// ── MCP Tokens (v0.9.9) ─────────────────────────
+export interface DbMcpToken {
+  id: string;
+  user_id: string;
+  name: string;
+  token_hash: string;
+  token_prefix: string;
+  last_used_at: string | null;
+  created_at: string;
+  revoked_at: string | null;
+}
+
 // ── Receipts (v0.9.0) ───────────────────────────
 export interface DbReceipt {
   id: string;
@@ -172,6 +184,7 @@ export interface Database {
       openledger_devices: { Row: DbDevice };
       openledger_sync_events: { Row: DbSyncEvent };
       openledger_receipts: { Row: DbReceipt };
+      openledger_mcp_tokens: { Row: DbMcpToken };
     };
   };
 }

@@ -1,6 +1,6 @@
 {
   "name": "openledger",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "description": "A private, editorial personal finance ledger.",
   "private": true,
   "license": "AGPL-3.0-or-later",
@@ -33,12 +33,14 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
     "lucide-react": "^1.17.0",
     "next": "16.2.6",
     "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react-dom": "19.2.6",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
