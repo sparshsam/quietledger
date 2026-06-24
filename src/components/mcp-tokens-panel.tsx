@@ -8,7 +8,7 @@
  * - List all tokens (name, prefix, last used, creation date)
  * - Revoke tokens
  */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 
 interface McpToken {
   id: string;
@@ -32,7 +32,7 @@ export function McpTokensPanel() {
   const [newToken, setNewToken] = useState<string | null>(null);
   const [revokingId, setRevokingId] = useState<string | null>(null);
 
-  const fetchTokens = useCallback(async () => {
+  const fetchTokens = async () => {
     try {
       setLoading(true);
       const res = await fetch("/api/mcp/tokens");
@@ -47,11 +47,12 @@ export function McpTokensPanel() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
+  // Fetch on mount
   useEffect(() => {
-    fetchTokens();
-  }, [fetchTokens]);
+    fetchTokens().catch(() => {});
+  }, []);
 
   const handleCreate = async () => {
     const name = newTokenName.trim();

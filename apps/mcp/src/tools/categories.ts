@@ -12,7 +12,7 @@ import type { Client } from "../supabase.js";
 export function registerCategoryTools(
   server: McpServer,
   getClient: () => Client,
-  _userId: string,
+  _userId: string, // eslint-disable-line @typescript-eslint/no-unused-vars
 ) {
   // ── LIST ────────────────────────────────────────
   server.tool(

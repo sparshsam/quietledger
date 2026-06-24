@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "openledger": {
+      "url": "https://openledgerbysparsh.vercel.app/api/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_TOKEN_HERE"
+      }
+    }
+  }
+}
