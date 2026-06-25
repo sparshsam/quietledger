@@ -88,7 +88,7 @@ export function GoalsPanel({
           <p style={{ fontSize: 13, color: "var(--text-secondary)", maxWidth: 400, margin: "0 auto 16px" }}>
             Goals are more meaningful after you understand your monthly spending. Set a few budgets first, then come back to create savings targets.
           </p>
-          <button className="pill pill-primary" onClick={() => onTabChange?.("budgets")}>
+          <button className="pill pill-primary" onClick={() => onTabChange?.("Goals")}>
             Set budgets first
           </button>
         </div>
