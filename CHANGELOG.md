@@ -2,6 +2,21 @@
 
 All notable changes to OpenLedger will be documented here.
 
+## 0.9.11 — 2026-06-25
+
+- **Accounts tab becomes a management hub.** Kind badges (Checking/Credit/Savings/Loan/Misc), explainer text, simplified type selection.
+- **CSV import account gate.** Import now requires selecting or creating an account before previewing. All imported transactions inherit the account.
+- **Account Type column.** Transactions table shows a Type column with color-coded kind badges.
+- **Mobile transaction cards.** Stacked card layout replaces horizontal scroll on mobile.
+- **Bottom nav fit.** All 5 tabs fit without overflow on narrow viewports.
+- **Backup error handling.** Classified errors show contextual messages (auth vs server vs unknown).
+- **Error boundaries.** All tab content wrapped with ErrorBoundary and retry fallback.
+- **Sentry crash reporting.** Configs added (disabled by default, requires `NEXT_PUBLIC_SENTRY_DSN`).
+- **Account deletion workflow.** Signed-in users can delete cloud data from Privacy settings.
+- **README rewrite.** Updated for current features, URL, and architecture.
+- **Architecture docs.** `docs/architecture.md` rewritten with current data model and structure.
+- **PWA manifest review.** Theme color updated to `#7A2F00`.
+
 ## 0.9.9 — 2026-06-24
 
 - **MCP Server.** AI agents can now read/write OpenLedger data via the Model Context Protocol.
