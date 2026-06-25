@@ -14,6 +14,8 @@ export const CATEGORY_HIERARCHY: Record<string, string[]> = {
 
 export const PARENT_LABELS = Object.keys(CATEGORY_HIERARCHY);
 
+export type CategorySummary = { parent: string; child: string; display: string };
+
 export type CategoryKeywordEntry = {
   parent: string;
   child: string;

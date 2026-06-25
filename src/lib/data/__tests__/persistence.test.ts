@@ -1,5 +1,12 @@
-import { describe, it, expect } from "vitest";
-import { normalizeLedgerBackup, createDemoLedgerState } from "../persistence";
+import { describe, it, expect, beforeEach } from "vitest";
+import {
+  normalizeLedgerBackup,
+  createDemoLedgerState,
+  loadCategoryLearnings,
+  saveCategoryLearnings,
+  recordCategoryLearning,
+} from "../persistence";
+import type { LearnedCategory } from "../types";
 
 describe("normalizeLedgerBackup — v0.4.0 backup (no budgets/goals)", () => {
   const v040backup = {
@@ -100,5 +107,48 @@ describe("createDemoLedgerState", () => {
   it("creates a state with empty goals array", () => {
     const state = createDemoLedgerState();
     expect(Array.isArray(state.goals)).toBe(true);
+  });
+});
+
+function createMockStorage(): Storage {
+  const store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => { store[key] = value; },
+    removeItem: (key: string) => { delete store[key]; },
+    clear: () => { Object.keys(store).forEach((k) => delete store[k]); },
+    get length() { return Object.keys(store).length; },
+    key: (index: number) => Object.keys(store)[index] ?? null,
+  };
+}
+
+describe("loadCategoryLearnings", () => {
+  it("returns an empty array when no key exists", () => {
+    const storage = createMockStorage();
+    expect(loadCategoryLearnings(storage)).toEqual([]);
+  });
+});
+
+describe("recordCategoryLearning", () => {
+  let storage: Storage;
+
+  beforeEach(() => {
+    storage = createMockStorage();
+  });
+
+  it("adds a new learning and returns the updated array", () => {
+    const current: LearnedCategory[] = [];
+    const result = recordCategoryLearning(storage, current, "starbucks", "Food", "Coffee");
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({ pattern: "starbucks", parent: "Food", child: "Coffee" });
+  });
+
+  it("replaces an existing pattern instead of duplicating", () => {
+    const current: LearnedCategory[] = [{ pattern: "starbucks", parent: "Food", child: "Coffee" }];
+    const result = recordCategoryLearning(storage, current, "Starbucks", "Food", "Delivery");
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({ pattern: "starbucks", parent: "Food", child: "Delivery" });
   });
 });
