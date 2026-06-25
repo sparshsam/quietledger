@@ -2,6 +2,7 @@
 
 import { useState, useRef, useMemo } from "react";
 import type { Account, ImportMetadata, LearnedCategory, Transaction } from "@/lib/data/types";
+import { Select } from "@/components/select";
 import { parseCsv, buildImportPreview, summarizeImport, type ParsedCsv, type ImportPreviewRow, type CsvMapping } from "@/lib/data/csv-import";
 import { guessMapping } from "@/lib/data/csv-import";
 import { autoCategorize } from "@/lib/data/categories";
@@ -99,11 +100,7 @@ export function ImportFlow({ accounts, transactions, learnings, onImport, onReco
             <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 16 }}>
               Every transaction needs an account. Choose where this statement belongs.
             </p>
-            <select value={selectedAccountId} onChange={(e) => setSelectedAccountId(e.target.value)} className="import-input">
-              {accounts.filter((a) => !a.archivedAt).map((a) => (
-                <option key={a.id} value={a.id}>{a.name}</option>
-              ))}
-            </select>
+            <Select value={selectedAccountId} onChange={setSelectedAccountId} options={accounts.filter((a) => !a.archivedAt).map((a) => ({ value: a.id, label: a.name }))} />
             <button className="pill pill-primary" onClick={() => setStep("upload")} disabled={!selectedAccountId}>
               Continue <span style={{ marginLeft: 4 }}>→</span>
             </button>
@@ -130,15 +127,12 @@ export function ImportFlow({ accounts, transactions, learnings, onImport, onReco
                 <div key={i} className="import-preview-row">
                   <span style={{ minWidth: 100, fontSize: 13 }}>{row.transaction?.date ?? "—"}</span>
                   <span style={{ flex: 1, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row.transaction?.description ?? "—"}</span>
-                  <select
+                  <Select
                     value={row.transaction?.category || "Misc"}
-                    onChange={(e) => handleCategoryChange(i, e.target.value)}
+                    onChange={(e) => handleCategoryChange(i, e)}
+                    options={["Food", "Housing", "Transport", "Income", "Subscriptions", "Shopping", "Health", "Debt", "Misc"].map((c) => ({ value: c, label: c }))}
                     className="import-cat-select"
-                  >
-                    {["Food", "Housing", "Transport", "Income", "Subscriptions", "Shopping", "Health", "Debt", "Misc"].map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
+                  />
                   <span style={{ minWidth: 80, textAlign: "right", fontSize: 13 }}>{row.transaction ? currency.format(row.transaction.amount) : "—"}</span>
                 </div>
               ))}

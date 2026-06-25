@@ -32,10 +32,10 @@ const EXPENSE = "#c94444";
 const ACCENT = "#7A2F00";
 const ZERO_LINE = "#d0d0d0";
 
-const H = 200;
-const PAD = { top: 12, right: 8, bottom: 24, left: 8 };
-const MIN_GROUP_W = 28;
-const BAR_GAP = 2;
+const H = 400;
+const PAD = { top: 24, right: 16, bottom: 36, left: 16 };
+const MIN_GROUP_W = 48;
+const BAR_GAP = 4;
 
 export function AllMonthsBarChart({
   transactions,
@@ -79,7 +79,7 @@ export function AllMonthsBarChart({
     <>
       <style>{`
         .all-months-chart-svg { display: block; width: 100%; height: ${H}px; }
-        @media (max-width: 767px) { .all-months-chart-svg { height: 140px; } }
+        @media (max-width: 767px) { .all-months-chart-svg { height: 250px; } }
         .all-months-chart-group { cursor: pointer; transition: opacity 0.15s; }
         .all-months-chart-group:hover rect { opacity: 0.7 !important; }
         .all-months-chart-group.active rect { opacity: 1 !important; }
@@ -163,7 +163,7 @@ export function AllMonthsBarChart({
                 x={centerX}
                 y={H - 4}
                 textAnchor="middle"
-                fontSize={10}
+                fontSize={12}
                 fill={active ? ACCENT : "var(--muted-dark, #666)"}
                 fontWeight={active ? "bold" : "normal"}
               >

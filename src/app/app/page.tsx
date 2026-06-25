@@ -68,6 +68,7 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { LedgerReport } from "@/components/ledger-report";
 import { ImportFlow } from "@/components/import-flow";
 import { AccountsView } from "@/components/accounts-view";
+import { Select } from "@/components/select";
 import { recordCategoryLearning, loadCategoryLearnings } from "@/lib/data/persistence";
 
 const currency = new Intl.NumberFormat("en-CA", {
@@ -1181,25 +1182,12 @@ function CsvImportPreview({
               {item.label}
               {item.required ? " *" : ""}
             </span>
-            <select value={mapping[item.field] ?? ""} onChange={(event) => onMappingChange(item.field, event.target.value)}>
-              <option value="">Not in this CSV</option>
-              {headers.map((header) => (
-                <option key={`${item.field}-${header}`} value={header}>
-                  {header}
-                </option>
-              ))}
-            </select>
+            <Select value={mapping[item.field] ?? ""} onChange={(v) => onMappingChange(item.field, v)} options={[{ value: "", label: "Not in this CSV" }, ...headers.map((h) => ({ value: h, label: h }))]} />
           </label>
         ))}
         <label>
           <span>Default account</span>
-          <select value={defaultAccountId} onChange={(event) => onDefaultAccountChange(event.target.value)}>
-            {accounts.map((account) => (
-              <option key={account.id} value={account.id}>
-                {account.name}
-              </option>
-            ))}
-          </select>
+          <Select value={defaultAccountId} onChange={onDefaultAccountChange} options={accounts.map((a) => ({ value: a.id, label: a.name }))} />
         </label>
       </div>
 
@@ -1294,30 +1282,15 @@ function ManualTransactionForm({
         </label>
         <label>
           <span>Type</span>
-          <select value={values.direction} onChange={(event) => onChange({ ...values, direction: event.target.value as TransactionFormValues["direction"] })}>
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
-          </select>
+          <Select value={values.direction} onChange={(v) => onChange({ ...values, direction: v as TransactionFormValues["direction"] })} options={[{ value: "expense", label: "Expense" }, { value: "income", label: "Income" }]} />
         </label>
         <label>
           <span>Account</span>
-          <select value={values.accountId} onChange={(event) => onChange({ ...values, accountId: event.target.value })}>
-            {accounts.map((account) => (
-              <option key={account.id} value={account.id}>
-                {account.name}
-              </option>
-            ))}
-          </select>
+          <Select value={values.accountId} onChange={(v) => onChange({ ...values, accountId: v })} options={accounts.map((a) => ({ value: a.id, label: a.name }))} />
         </label>
         <label>
           <span>Category</span>
-          <select value={values.category} onChange={(event) => onChange({ ...values, category: event.target.value })}>
-            {categoryOptions.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
+          <Select value={values.category} onChange={(v) => onChange({ ...values, category: v })} options={categoryOptions.map((c) => ({ value: c, label: c }))} />
         </label>
         <label className="wide-field">
           <span>Notes</span>
@@ -1370,13 +1343,7 @@ function AccountManagement({
         </label>
         <label>
           <span>Type</span>
-          <select value={values.kind} onChange={(event) => onChange({ ...values, kind: event.target.value as AccountKind })}>
-            {accountKindOptions.map((kind) => (
-              <option key={kind.value} value={kind.value}>
-                {kind.label}
-              </option>
-            ))}
-          </select>
+          <Select value={values.kind} onChange={(v) => onChange({ ...values, kind: v as AccountKind })} options={accountKindOptions} />
         </label>
         <label>
           <span>Starting balance</span>

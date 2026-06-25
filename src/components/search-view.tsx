@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Search, X, Filter, Save } from "lucide-react";
 import type { Account, Transaction } from "@/lib/data/types";
+import { Select } from "@/components/select";
 
 const currency = new Intl.NumberFormat("en-CA", {
   style: "currency",
@@ -367,33 +368,11 @@ export function SearchView({
             <div className="search-filter-row">
               <label>
                 <span>Category</span>
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                >
-                  <option value="all">All categories</option>
-                  {allCategories.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
+                <Select value={categoryFilter} onChange={setCategoryFilter} options={[{ value: "all", label: "All categories" }, ...allCategories.map((c) => ({ value: c, label: c }))]} />
               </label>
               <label>
                 <span>Account</span>
-                <select
-                  value={accountFilter}
-                  onChange={(e) => setAccountFilter(e.target.value)}
-                >
-                  <option value="all">All accounts</option>
-                  {accounts
-                    .filter((a) => !a.archivedAt)
-                    .map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.name}
-                      </option>
-                    ))}
-                </select>
+                <Select value={accountFilter} onChange={setAccountFilter} options={[{ value: "all", label: "All accounts" }, ...accounts.filter((a) => !a.archivedAt).map((a) => ({ value: a.id, label: a.name }))]} />
               </label>
             </div>
             <div className="search-filter-row">

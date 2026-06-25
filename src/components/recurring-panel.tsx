@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Plus, Pencil, Trash2, SkipForward, Play, Pause } from "lucide-react";
 import type { Account, RecurringEntry, RecurringFrequency } from "@/lib/data/types";
+import { Select } from "@/components/select";
 import { generateUpcomingEntries, isDue, skipOccurrence } from "@/lib/finance/recurring";
 
 const currency = new Intl.NumberFormat("en-CA", {
@@ -549,46 +550,11 @@ export function RecurringPanel({
                   onChange={(e) => setForm({ ...form, amount: e.target.value })}
                   placeholder="Amount"
                 />
-                <select
-                  className="ef-select"
-                  value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}
-                >
-                  {categoryOptions.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
+                <Select value={form.category} onChange={(v) => setForm({ ...form, category: v })} options={categoryOptions.map((c) => ({ value: c, label: c }))} />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <select
-                  className="ef-select"
-                  value={form.accountId}
-                  onChange={(e) => setForm({ ...form, accountId: e.target.value })}
-                >
-                  {accounts.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.name}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="ef-select"
-                  value={form.frequency}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      frequency: e.target.value as RecurringFrequency,
-                    })
-                  }
-                >
-                  {frequencyOptions.map((f) => (
-                    <option key={f.value} value={f.value}>
-                      {f.label}
-                    </option>
-                  ))}
-                </select>
+                <Select value={form.accountId} onChange={(v) => setForm({ ...form, accountId: v })} options={accounts.map((a) => ({ value: a.id, label: a.name }))} />
+                <Select value={form.frequency} onChange={(v) => setForm({ ...form, frequency: v as RecurringFrequency })} options={frequencyOptions} />
               </div>
               {form.frequency === "custom" ? (
                 <input

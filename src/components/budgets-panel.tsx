@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import type { Budget, Transaction } from "@/lib/data/types";
 import { budgetUtilization, remainingBudget, isOverBudget, averageSpendingByCategory } from "@/lib/finance/budgets";
+import { Select } from "@/components/select";
 
 const currency = new Intl.NumberFormat("en-CA", {
   style: "currency",
@@ -95,11 +96,7 @@ export function BudgetsPanel({
         <div className="budget-form-grid">
           <label>
             <span>Category</span>
-            <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
-              {categoryOptions.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
+            <Select value={form.category} onChange={(v) => setForm({ ...form, category: v })} options={categoryOptions.map((c) => ({ value: c, label: c }))} />
           </label>
           <label>
             <span>Month</span>

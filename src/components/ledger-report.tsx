@@ -101,7 +101,7 @@ export function LedgerReport({
       {/* Report Header */}
       <div className="report-header">
         <div className="report-header-left">
-          <h1 className="text-3xl sm:text-4xl font-black" style={{ color: "var(--text-primary)" }}>
+          <h1 className="report-title" style={{ color: "var(--text-primary)" }}>
             {monthLabel}
           </h1>
           <MonthPicker value={month} onChange={onMonthChange} />
@@ -111,7 +111,7 @@ export function LedgerReport({
       {/* Summary Strip — numbers first */}
       <div className="month-summary">
         <div className="month-summary-item">
-          <span className="month-summary-value text-4xl sm:text-5xl font-black positive">
+          <span className="month-summary-value positive">
             {currency.format(income)}
           </span>
           <span className="month-summary-label text-xs font-bold tracking-wider uppercase">
@@ -119,7 +119,7 @@ export function LedgerReport({
           </span>
         </div>
         <div className="month-summary-item">
-          <span className="month-summary-value text-4xl sm:text-5xl font-black negative">
+          <span className="month-summary-value negative">
             {currency.format(expenses)}
           </span>
           <span className="month-summary-label text-xs font-bold tracking-wider uppercase">
@@ -129,7 +129,7 @@ export function LedgerReport({
         <div className="month-summary-item">
           <span
             className={
-              "month-summary-value text-4xl sm:text-5xl font-black " +
+              "month-summary-value " +
               (remaining >= 0 ? "positive" : "negative")
             }
           >
@@ -246,7 +246,7 @@ export function LedgerReport({
       <section className="net-worth-section">
         <div className="net-worth-main">
           <span className="net-worth-label">Net worth</span>
-          <span className="net-worth-value text-3xl sm:text-4xl font-black">
+          <span className="net-worth-value">
             {currency.format(netWorth)}
           </span>
         </div>

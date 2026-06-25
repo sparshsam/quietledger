@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Search, ArrowUpDown } from "lucide-react";
 import type { Account, Transaction } from "@/lib/data/types";
 import { NoTransactions } from "./empty-states";
+import { Select } from "@/components/select";
 
 const currency = new Intl.NumberFormat("en-CA", {
   style: "currency",
@@ -138,23 +139,9 @@ export function TransactionsView({
             <span className="sr-only">To date</span>
             <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
           </label>
-          <select value={accountFilter} onChange={(e) => setAccountFilter(e.target.value)} aria-label="Filter by account">
-            <option value="all">All accounts</option>
-            {accounts.filter((a) => !a.archivedAt).map((a) => (
-              <option key={a.id} value={a.id}>{a.name}</option>
-            ))}
-          </select>
-          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} aria-label="Filter by category">
-            <option value="all">All categories</option>
-            {allCategories.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as "all" | "income" | "expense")} aria-label="Filter by type">
-            <option value="all">All types</option>
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-          </select>
+          <Select value={accountFilter} onChange={setAccountFilter} options={[{ value: "all", label: "All accounts" }, ...accounts.filter((a) => !a.archivedAt).map((a) => ({ value: a.id, label: a.name }))]} />
+          <Select value={categoryFilter} onChange={setCategoryFilter} options={[{ value: "all", label: "All categories" }, ...allCategories.map((c) => ({ value: c, label: c }))]} />
+          <Select value={typeFilter} onChange={(v) => setTypeFilter(v as "all" | "income" | "expense")} options={[{ value: "all", label: "All types" }, { value: "income", label: "Income" }, { value: "expense", label: "Expense" }]} />
         </div>
       </div>
 
