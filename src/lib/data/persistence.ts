@@ -1,5 +1,5 @@
 import { ledgerData } from "./seed";
-import type { PersistedLedgerState } from "./types";
+import type { LearnedCategory, PersistedLedgerState } from "./types";
 
 export const LEDGER_STORAGE_KEY = "openledger.localLedger.v1";
 export const LEDGER_SCHEMA_VERSION = 1;
@@ -175,6 +175,35 @@ export function normalizeLedgerBackup(value: unknown, source: "saved" | "backup"
     source: "saved",
     warning,
   };
+}
+
+const LEARNINGS_KEY = "openledger_category_learnings";
+
+export function loadCategoryLearnings(storage: Storage): LearnedCategory[] {
+  try {
+    const raw = storage.getItem(LEARNINGS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveCategoryLearnings(storage: Storage, learnings: LearnedCategory[]): void {
+  storage.setItem(LEARNINGS_KEY, JSON.stringify(learnings));
+}
+
+export function recordCategoryLearning(
+  storage: Storage,
+  current: LearnedCategory[],
+  pattern: string,
+  parent: string,
+  child: string,
+): LearnedCategory[] {
+  const normalized = pattern.toLowerCase().trim();
+  const updated = current.filter((l) => l.pattern !== normalized);
+  updated.push({ pattern: normalized, parent, child });
+  saveCategoryLearnings(storage, updated);
+  return updated;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
