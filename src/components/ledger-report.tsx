@@ -11,7 +11,6 @@ import {
 } from "@/lib/finance/totals";
 import { categoryTotals, monthlyTotals } from "@/lib/finance/grouping";
 import { budgetUtilization, remainingBudget, isOverBudget } from "@/lib/finance/budgets";
-import { goalProgress } from "@/lib/finance/goals";
 import { IncomeVsExpensesChart } from "@/components/charts/income-vs-expenses";
 import { SpendingByCategoryChart } from "@/components/charts/spending-by-category";
 import { MonthlyTrendChart } from "@/components/charts/monthly-trend";
@@ -22,7 +21,6 @@ type LedgerReportProps = {
   transactions: Transaction[];
   accounts: Account[];
   budgets: Budget[];
-  goals: Goal[];
   month: string;
   activeCategory: string | null;
   activeAccountId: string | null;
@@ -33,7 +31,6 @@ export function LedgerReport({
   transactions,
   accounts,
   budgets,
-  goals,
   month,
   activeCategory,
   activeAccountId,
@@ -70,13 +67,11 @@ export function LedgerReport({
   const netWorth = computeNetWorth(accounts);
 
   const catData = useMemo(() => {
-    return categoryTotals(monthlyTxns.filter((t) => t.amount < 0)).map(
-      ({ category, total }) => ({
-        category,
-        total: Math.abs(total),
-      }),
-    );
-  }, [monthlyTxns]);
+    return categories.map(({ category, spent }) => ({
+      category,
+      total: -spent,  // convert back to negative for chart
+    }));
+  }, [categories]);
 
   const periodData = useMemo(() => {
     return monthlyTotals(monthlyTxns).map((m) => ({
