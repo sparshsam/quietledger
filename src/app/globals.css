@@ -280,6 +280,15 @@ main.narrow, .narrow { max-width: 720px; margin-inline: auto; width: 100%; paddi
 .account-kind-badge.badge-loan { background: #fff0d0; color: #cc6600; }
 .account-kind-badge.badge-misc { background: #e8e8e8; color: #666666; }
 
+/* ── CSV account gate ── */
+.csv-account-gate {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: var(--space-lg);
+}
+
 /* ══ Auth panel ══ */
 .auth-section { margin-top: var(--space-lg); }
 

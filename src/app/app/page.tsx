@@ -178,6 +178,10 @@ export default function Home() {
   const [csvFileName, setCsvFileName] = useState("");
   const [csvMapping, setCsvMapping] = useState<CsvMapping>({});
   const [defaultImportAccountId, setDefaultImportAccountId] = useState("chequing");
+  const [showImportAccountGate, setShowImportAccountGate] = useState(false);
+  const [importAccountName, setImportAccountName] = useState("");
+  const [importAccountKind, setImportAccountKind] = useState<AccountKind>("chequing");
+  const [importCreateMode, setImportCreateMode] = useState(false);
   const [currentImportId, setCurrentImportId] = useState("");
   const [importNotice, setImportNotice] = useState("No CSV loaded yet.");
   const [transactionForm, setTransactionForm] = useState<TransactionFormValues>({
@@ -398,7 +402,12 @@ export default function Home() {
       setCsvFileName(file.name);
       setCsvMapping(guessMapping(parsed.headers));
       setCurrentImportId(nextImportId);
-      setImportNotice(`${parsed.rows.length} rows parsed locally.${parsed.rows.length >= MAX_CSV_ROWS ? " Row limit reached." : ""} Review the mapping before saving.`);
+      // Reset account gate — pick account before preview
+      setDefaultImportAccountId(activeAccounts.length > 0 ? activeAccounts[0].id : "");
+      setImportAccountName("");
+      setImportAccountKind("chequing");
+      setShowImportAccountGate(true);
+      setImportNotice(`${parsed.rows.length} rows parsed locally.${parsed.rows.length >= MAX_CSV_ROWS ? " Row limit reached." : ""} Select an account then review the mapping.`);
       setActiveTab("Transactions");
     } catch (err) {
       setImportNotice(`Failed to parse file: ${err instanceof Error ? err.message : "Unknown error"}`);
@@ -422,6 +431,8 @@ export default function Home() {
     setParsedCsv(null);
     setCsvFileName("");
     setCsvMapping({});
+    setShowImportAccountGate(false);
+    setImportCreateMode(false);
     setActiveTab("Transactions");
   }
 
@@ -854,25 +865,123 @@ export default function Home() {
             {/* CSV import preview — shown after selecting a CSV file */}
             {parsedCsv ? (
               <div style={{ marginTop: 'var(--space-lg)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
-                  <h2 className="section-title" style={{ margin: 0 }}>Import preview</h2>
-                  <button className="pill pill-ghost" onClick={() => { setParsedCsv(null); setCsvMapping({}); }} style={{ fontSize: 12, padding: '4px 12px', border: 0 }}>
-                    Dismiss
-                  </button>
-                </div>
-                <CsvImportPreview
-                  headers={parsedCsv.headers}
-                  mapping={csvMapping}
-                  onMappingChange={(field, header) => setCsvMapping((prev) => ({ ...prev, [field]: header }))}
-                  defaultAccountId={defaultImportAccountId}
-                  onDefaultAccountChange={setDefaultImportAccountId}
-                  accounts={activeAccounts}
-                  rows={importPreview}
-                  validCount={validImportRows.length}
-                  duplicateCount={duplicateImportRows.length}
-                  errorCount={errorImportRows.length}
-                  onSave={saveImportedTransactions}
-                />
+                {showImportAccountGate ? (
+                  /* Account gate — pick or create account before preview */
+                  <div className="csv-account-gate">
+                    <h2 className="section-title" style={{ marginBottom: 12 }}>Which account is this for?</h2>
+                    <p className="gentle-help" style={{ marginBottom: 16, lineHeight: 1.5 }}>
+                      Select the account these transactions belong to, or create a new one.
+                    </p>
+                    {!importCreateMode ? (
+                      <>
+                        <label style={{ display: 'block', marginBottom: 12 }}>
+                          <span style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Account</span>
+                          <select
+                            value={defaultImportAccountId}
+                            onChange={(e) => setDefaultImportAccountId(e.target.value)}
+                            style={{ width: '100%', maxWidth: 360, padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 14, background: 'var(--surface)' }}
+                          >
+                            {activeAccounts.length === 0 ? (
+                              <option value="">No accounts — create one</option>
+                            ) : (
+                              activeAccounts.map((a) => (
+                                <option key={a.id} value={a.id}>{a.name} ({accountKindLabel(a.kind)})</option>
+                              ))
+                            )}
+                          </select>
+                        </label>
+                        <div className="form-actions">
+                          <button onClick={() => setImportCreateMode(true)}>
+                            <Plus size={16} aria-hidden />
+                            New account
+                          </button>
+                          <button
+                            disabled={!defaultImportAccountId}
+                            onClick={() => {
+                              setShowImportAccountGate(false);
+                              setImportNotice(`${parsedCsv.rows.length} rows parsed locally. Review the mapping before saving.`);
+                            }}
+                          >
+                            Continue to preview
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      /* Mini create account form */
+                      <div className="ledger-form" style={{ maxWidth: 360 }}>
+                        <label style={{ display: 'block', marginBottom: 8 }}>
+                          <span style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Name</span>
+                          <input
+                            value={importAccountName}
+                            onChange={(e) => setImportAccountName(e.target.value)}
+                            placeholder="TD Chequing"
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 14 }}
+                          />
+                        </label>
+                        <label style={{ display: 'block', marginBottom: 12 }}>
+                          <span style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Type</span>
+                          <select
+                            value={importAccountKind}
+                            onChange={(e) => setImportAccountKind(e.target.value as AccountKind)}
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 14, background: 'var(--surface)' }}
+                          >
+                            {accountKindOptions.map((k) => (
+                              <option key={k.value} value={k.value}>{k.label}</option>
+                            ))}
+                          </select>
+                        </label>
+                        <p className="gentle-help" style={{ marginBottom: 12 }}>
+                          You can set a starting balance later in Settings &rarr; Accounts.
+                        </p>
+                        <div className="form-actions">
+                          <button
+                            disabled={!importAccountName.trim()}
+                            onClick={() => {
+                              const newAccount: Account = {
+                                id: `account-${crypto.randomUUID()}`,
+                                name: importAccountName.trim(),
+                                kind: importAccountKind,
+                                subtitle: accountKindOptions.find((k) => k.value === importAccountKind)?.label ?? "Account",
+                                balance: 0,
+                                currency: "CAD",
+                              };
+                              setAccounts((prev) => [newAccount, ...prev]);
+                              setDefaultImportAccountId(newAccount.id);
+                              setImportCreateMode(false);
+                            }}
+                          >
+                            <Plus size={16} aria-hidden />
+                            Create & continue
+                          </button>
+                          <button onClick={() => setImportCreateMode(false)}>Cancel</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Existing preview/mapping step */
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
+                      <h2 className="section-title" style={{ margin: 0 }}>Import preview</h2>
+                      <button className="pill pill-ghost" onClick={() => { setParsedCsv(null); setCsvMapping({}); setShowImportAccountGate(false); }} style={{ fontSize: 12, padding: '4px 12px', border: 0 }}>
+                        Dismiss
+                      </button>
+                    </div>
+                    <CsvImportPreview
+                      headers={parsedCsv.headers}
+                      mapping={csvMapping}
+                      onMappingChange={(field, header) => setCsvMapping((prev) => ({ ...prev, [field]: header }))}
+                      defaultAccountId={defaultImportAccountId}
+                      onDefaultAccountChange={setDefaultImportAccountId}
+                      accounts={activeAccounts}
+                      rows={importPreview}
+                      validCount={validImportRows.length}
+                      duplicateCount={duplicateImportRows.length}
+                      errorCount={errorImportRows.length}
+                      onSave={saveImportedTransactions}
+                    />
+                  </>
+                )}
                 <p style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 8 }}>
                   {csvFileName} {"•"} {parsedCsv.rows.length} rows
                 </p>
