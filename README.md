@@ -2,7 +2,7 @@
 
 **A private, local-first personal finance ledger. No bank connections, no dashboards, no noise.**
 
-[![Live app](https://img.shields.io/badge/live-openledgerbysparsh.vercel.app-7A2F00?style=flat-square)](https://openledgerbysparsh.vercel.app)
+[![Live app](https://img.shields.io/badge/live-ledger.kovina.org-7A2F00?style=flat-square)](https://ledger.kovina.org)
 [![CI](https://img.shields.io/github/actions/workflow/status/sparshsam/openledger/ci.yml?branch=main&style=flat-square&label=ci)](https://github.com/sparshsam/openledger/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0--or--later-6f7d61?style=flat-square)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square)](https://nextjs.org)
@@ -10,7 +10,7 @@
 
 OpenLedger is a calm, local-first finance tool for everyday budgeting and records. It runs entirely in the browser — your financial data stays on your device unless you choose to back it up.
 
-**Live app:** [https://openledgerbysparsh.vercel.app](https://openledgerbysparsh.vercel.app)
+**Live app:** [https://ledger.kovina.org](https://ledger.kovina.org)
 
 ![OpenLedger dashboard](assets/screenshot-main.png)
 
@@ -18,7 +18,7 @@ OpenLedger is a calm, local-first finance tool for everyday budgeting and record
 
 | Link | Description |
 | --- | --- |
-| [Live app](https://openledgerbysparsh.vercel.app) | Production deployment on Vercel |
+| [Live app](https://ledger.kovina.org) | Production deployment on Vercel |
 | [Architecture docs](docs/architecture.md) | Data model, auth, and sync architecture |
 | [Security policy](SECURITY.md) | Reporting guidance and current limitations |
 | [Contributing](CONTRIBUTING.md) | Local setup and contribution expectations |
@@ -51,7 +51,7 @@ OpenLedger is a calm, local-first finance tool for everyday budgeting and record
 | Auth | Supabase Auth (Google OAuth) |
 | Cloud | Supabase Postgres (Elora project, `openledger_` prefix) |
 | Crash Reporting | Sentry (optional) |
-| Hosting | Vercel → [openledgerbysparsh.vercel.app](https://openledgerbysparsh.vercel.app) |
+| Hosting | Vercel → [ledger.kovina.org](https://ledger.kovina.org) |
 | License | AGPL-3.0-or-later |
 
 ## Screenshots

@@ -50,7 +50,7 @@ Releases:
 - **Data:** Local-first (`localStorage`), optional Supabase cloud backup
 - **Auth:** Supabase Auth (email OTP, Google OAuth)
 - **Database:** Supabase Postgres (shared Elora project — `openledger_` prefix)
-- **Deployment:** Vercel → https://openledgerbysparsh.vercel.app
+- **Deployment:** Vercel → https://ledger.kovina.org (formerly https://openledgerbysparsh.vercel.app)
 - **GitHub:** https://github.com/sparshsam/openledger
 
 ## Status — v0.9.10 (Mobile & Identity Release Candidate)

@@ -10,7 +10,7 @@ const noto = Noto_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://openledgerbysparsh.vercel.app"),
+  metadataBase: new URL("https://ledger.kovina.org"),
   title: {
     default: "OpenLedger",
     template: "%s · OpenLedger",
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "OpenLedger",
     description: "A private, editorial personal finance ledger.",
-    url: "https://openledgerbysparsh.vercel.app",
+    url: "https://ledger.kovina.org",
     siteName: "OpenLedger",
     images: [
       {
