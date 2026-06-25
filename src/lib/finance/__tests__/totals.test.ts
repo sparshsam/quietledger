@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeIncome, computeExpenses, computeNetCashflow, computeNetWorth } from "../totals";
+import { computeIncome, computeExpenses, computeNetCashflow, computeNetWorth, computeMonthIncome, computeMonthExpenses, computeMonthCashflow } from "../totals";
 import type { Account, Transaction } from "@/lib/data/types";
 
 describe("computeIncome", () => {
@@ -66,5 +66,30 @@ describe("computeNetWorth", () => {
 
   it("returns 0 for empty accounts", () => {
     expect(computeNetWorth([])).toBe(0);
+  });
+});
+
+const txns: Transaction[] = [
+  { id: "1", date: "2026-06-15", description: "Salary", category: "Income", accountId: "a1", amount: 5000 },
+  { id: "2", date: "2026-06-10", description: "Rent", category: "Housing", accountId: "a1", amount: -1500 },
+  { id: "3", date: "2026-05-15", description: "Freelance", category: "Income", accountId: "a1", amount: 2000 },
+  { id: "4", date: "2026-05-10", description: "Groceries", category: "Food", accountId: "a1", amount: -400 },
+];
+
+describe("month-scoped helpers", () => {
+  it("computeMonthIncome returns income for the given month", () => {
+    expect(computeMonthIncome(txns, "2026-06")).toBe(5000);
+  });
+
+  it("computeMonthExpenses returns expenses for the given month", () => {
+    expect(computeMonthExpenses(txns, "2026-06")).toBe(1500);
+  });
+
+  it("computeMonthCashflow returns income - expenses for the month", () => {
+    expect(computeMonthCashflow(txns, "2026-06")).toBe(3500);
+  });
+
+  it("returns 0 for month with no transactions", () => {
+    expect(computeMonthIncome(txns, "2027-01")).toBe(0);
   });
 });
