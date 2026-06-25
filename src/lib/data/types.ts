@@ -15,7 +15,8 @@ export type Transaction = {
   date: string;
   description: string;
   merchant?: string;
-  category: string;
+  category: string;       // parent category, e.g. "Food"
+  subcategory?: string;   // child category, e.g. "Coffee"
   accountId: string;
   amount: number;
   note?: string;
@@ -31,6 +32,12 @@ export type ImportMetadata = {
   acceptedCount: number;
   duplicateCount: number;
   warningCount: number;
+};
+
+export type LearnedCategory = {
+  pattern: string;       // normalized merchant name, e.g. "starbucks"
+  parent: string;        // e.g. "Food"
+  child: string;         // e.g. "Coffee"
 };
 
 export type CategoryPattern = {
