@@ -203,6 +203,7 @@ export default function Home() {
     balance: "",
   });
   const [accountError, setAccountError] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState("");
   const jsonImportRef = useRef<HTMLInputElement | null>(null);
   const csvFileRef = useRef<HTMLInputElement | null>(null);
   const skipNextSaveCountRef = useRef(0);
@@ -472,6 +473,24 @@ export default function Home() {
     applyLedgerState(createDemoLedgerState());
     setLastSavedAt(null);
     setStorageNotice("Local browser data cleared. Demo fallback is showing.");
+  }
+
+  async function deleteCloudData() {
+    if (deleteConfirm !== "DELETE") return;
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+    const tables = ["openledger_transactions", "openledger_accounts", "openledger_budgets", "openledger_goals", "openledger_backups", "openledger_devices", "openledger_imports", "openledger_sync_events", "openledger_receipts"];
+    let failed = 0;
+    for (const table of tables) {
+      const { error } = await supabase.from(table).delete().neq("user_id", "00000000-0000-0000-0000-000000000000"); // RLS scopes to own user_id
+      if (error) failed++;
+    }
+    if (failed > 0) {
+      setStorageNotice(`Cloud data partially deleted. ${tables.length - failed} of ${tables.length} tables cleared.`);
+    } else {
+      setStorageNotice("Cloud data deleted. Sign out and back in to fully reset.");
+    }
+    setDeleteConfirm("");
   }
 
   function handleRestoreFromCloud(payload: { accounts: unknown[]; transactions: unknown[]; budgets?: unknown[]; goals?: unknown[]; recurringEntries?: unknown[] }) {
@@ -1126,6 +1145,35 @@ export default function Home() {
                         <br />You can delete all local data at any time from the Data section. Cloud data can be deleted from the Cloud section.
                       </div>
                     </div>
+                    {authMode === "signed-in" ? (
+                      <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16, marginTop: 16 }}>
+                        <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4, color: 'var(--negative)' }}>Delete cloud data</p>
+                        <p className="gentle-help" style={{ marginBottom: 8 }}>
+                          This removes all your OpenLedger data from the cloud (accounts, transactions, budgets, goals, backups, and devices). Local data in this browser is not affected.
+                        </p>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Type <strong>DELETE</strong> to confirm:</span>
+                          <input
+                            value={deleteConfirm}
+                            onChange={(e) => setDeleteConfirm(e.target.value)}
+                            style={{ width: 100, padding: '4px 8px', fontSize: 13, borderRadius: 6, border: '1px solid var(--border)' }}
+                            placeholder="DELETE"
+                          />
+                        </label>
+                        <button
+                          disabled={deleteConfirm !== "DELETE"}
+                          onClick={deleteCloudData}
+                          style={{
+                            padding: '8px 20px', borderRadius: 999, border: 'none',
+                            background: deleteConfirm === "DELETE" ? '#c44a4a' : 'var(--surface-secondary)',
+                            color: deleteConfirm === "DELETE" ? '#fff' : 'var(--text-tertiary)',
+                            fontSize: 13, fontWeight: 600, cursor: deleteConfirm === "DELETE" ? 'pointer' : 'default',
+                          }}
+                        >
+                          Delete cloud data
+                        </button>
+                      </div>
+                    ) : null}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
                       <a href="/privacy" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Privacy Policy</a>
                       <a href="/terms" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Terms of Service</a>
