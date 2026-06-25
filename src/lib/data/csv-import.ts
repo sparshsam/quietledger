@@ -1,4 +1,5 @@
-import type { Account, ImportMetadata, Transaction } from "./types";
+import { autoCategorize } from "./categories";
+import type { Account, ImportMetadata, LearnedCategory, Transaction } from "./types";
 
 export type CsvField = "date" | "description" | "merchant" | "amount" | "account" | "category" | "type";
 export type CsvMapping = Partial<Record<CsvField, string>>;
@@ -131,6 +132,7 @@ export function buildImportPreview({
   existingTransactions,
   defaultAccountId,
   importId,
+  learnings,
 }: {
   parsed: ParsedCsv;
   mapping: CsvMapping;
@@ -138,6 +140,7 @@ export function buildImportPreview({
   existingTransactions: Transaction[];
   defaultAccountId: string;
   importId: string;
+  learnings?: LearnedCategory[];
 }): ImportPreviewRow[] {
   const seen = new Set<string>();
 
@@ -151,6 +154,17 @@ export function buildImportPreview({
     const accountId = resolveAccountId(read(raw, mapping.account), accounts, defaultAccountId);
     const category = read(raw, mapping.category) || inferCategory(`${merchant} ${description}`, amount);
 
+    // Auto-categorize from learned patterns if still uncategorized
+    let finalCategory = category;
+    let finalSubcategory: string | undefined;
+    if (category === "Misc" && learnings?.length) {
+      const result = autoCategorize(`${merchant || ""} ${description || ""}`, learnings);
+      if (result) {
+        finalCategory = result.parent;
+        finalSubcategory = result.child;
+      }
+    }
+
     if (!parsedDate) warnings.push({ level: "error", message: "Invalid or missing date" });
     if (amount === null) warnings.push({ level: "error", message: "Missing amount" });
     if (!description) warnings.push({ level: "warning", message: "Missing description" });
@@ -162,7 +176,8 @@ export function buildImportPreview({
             date: parsedDate,
             description: description || merchant || "Imported transaction",
             merchant: merchant || undefined,
-            category,
+            category: finalCategory,
+            subcategory: finalSubcategory,
             accountId,
             amount,
             source: "csv" as const,
