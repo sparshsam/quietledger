@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { budgetUtilization, remainingBudget, isOverBudget, findOverBudget } from "../budgets";
+import { budgetUtilization, remainingBudget, isOverBudget, findOverBudget, averageSpendingByCategory } from "../budgets";
 import type { Budget, Transaction } from "@/lib/data/types";
 
 describe("budgetUtilization", () => {
@@ -81,5 +81,30 @@ describe("findOverBudget", () => {
       { id: "b1", category: "Groceries", month: "2026-05", amount: 200 },
     ];
     expect(findOverBudget(budgets, [])).toEqual([]);
+  });
+});
+
+const txns: Transaction[] = [
+  { id: "1", date: "2026-06-15", description: "Metro", category: "Food", accountId: "a1", amount: -85 },
+  { id: "2", date: "2026-06-10", description: "Uber Eats", category: "Food", accountId: "a1", amount: -32 },
+  { id: "3", date: "2026-05-15", description: "Loblaws", category: "Food", accountId: "a1", amount: -200 },
+  { id: "4", date: "2026-05-10", description: "Shell", category: "Transport", accountId: "a1", amount: -60 },
+  { id: "5", date: "2026-06-05", description: "Rent", category: "Housing", accountId: "a1", amount: -1100 },
+];
+
+describe("averageSpendingByCategory", () => {
+  it("computes monthly avg per category over given months", () => {
+    const result = averageSpendingByCategory(txns, 3);
+    expect(result).toContainEqual({ category: "Food", monthlyAverage: expect.closeTo(158.5, 1) });
+    expect(result).toContainEqual({ category: "Transport", monthlyAverage: expect.closeTo(60, 1) });
+  });
+
+  it("sorts by highest average first", () => {
+    const result = averageSpendingByCategory(txns, 3);
+    expect(result[0].category).toBe("Housing");
+  });
+
+  it("returns empty array for no transactions", () => {
+    expect(averageSpendingByCategory([], 3)).toEqual([]);
   });
 });

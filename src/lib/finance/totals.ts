@@ -1,4 +1,5 @@
 import type { Account, Transaction } from "@/lib/data/types";
+import { monthlyTotals } from "./grouping";
 
 export function computeIncome(transactions: Transaction[]): number {
   return transactions
@@ -38,6 +39,32 @@ export function computeMonthExpenses(transactions: Transaction[], month: string)
 
 export function computeMonthCashflow(transactions: Transaction[], month: string): number {
   return computeMonthIncome(transactions, month) - computeMonthExpenses(transactions, month);
+}
+
+export function computeMonthOverMonth(transactions: Transaction[], month: string): number | null {
+  const months = monthlyTotals(transactions);
+  const idx = months.findIndex((m) => m.month === month);
+  if (idx < 1) return null;
+  const current = months[idx].expense;
+  const previous = months[idx - 1].expense;
+  if (previous === 0) return null;
+  return Math.round(((current - previous) / previous) * 100);
+}
+
+export function computeCategoryMonthOverMonth(
+  transactions: Transaction[],
+  category: string,
+  month: string,
+): number | null {
+  const current = transactions.filter((t) => t.category === category && t.date.startsWith(month));
+  const currentExpense = Math.abs(current.filter((t) => t.amount < 0).reduce((s, t) => s + t.amount, 0));
+  if (currentExpense === 0) return null;
+  const prevMonth = `${Number(month.slice(0, 4))}-${String(Number(month.slice(5, 7)) - 1).padStart(2, "0")}`;
+  if (prevMonth < "2000-01") return null;
+  const previous = transactions.filter((t) => t.category === category && t.date.startsWith(prevMonth));
+  const prevExpense = Math.abs(previous.filter((t) => t.amount < 0).reduce((s, t) => s + t.amount, 0));
+  if (prevExpense === 0) return currentExpense > 0 ? null : null;
+  return Math.round(((currentExpense - prevExpense) / prevExpense) * 100);
 }
 
 export function accountEffectiveBalance(

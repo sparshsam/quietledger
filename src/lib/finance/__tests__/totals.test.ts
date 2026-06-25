@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeIncome, computeExpenses, computeNetCashflow, computeNetWorth, computeMonthIncome, computeMonthExpenses, computeMonthCashflow } from "../totals";
+import { computeIncome, computeExpenses, computeNetCashflow, computeNetWorth, computeMonthIncome, computeMonthExpenses, computeMonthCashflow, computeMonthOverMonth, computeCategoryMonthOverMonth } from "../totals";
 import type { Account, Transaction } from "@/lib/data/types";
 
 describe("computeIncome", () => {
@@ -91,5 +91,18 @@ describe("month-scoped helpers", () => {
 
   it("returns 0 for month with no transactions", () => {
     expect(computeMonthIncome(txns, "2027-01")).toBe(0);
+  });
+});
+
+describe("month-over-month", () => {
+  it("computeMonthOverMonth calculates % change in expenses", () => {
+    // June spent 1500, May spent 400
+    const result = computeMonthOverMonth(txns, "2026-06");
+    expect(result).toBeCloseTo(275, 0); // (1500-400)/400 * 100
+  });
+
+  it("computeCategoryMonthOverMonth calculates % change for one category", () => {
+    const result = computeCategoryMonthOverMonth(txns, "Food", "2026-06");
+    expect(result).toBeNull(); // No Food txns in June
   });
 });
