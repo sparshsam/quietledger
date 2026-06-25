@@ -332,6 +332,28 @@ main.narrow, .narrow { max-width: 720px; margin-inline: auto; width: 100%; paddi
 .legal-body code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 13px; background: var(--surface-secondary); padding: 1px 6px; border-radius: 4px; }
 .legal-updated { font-size: 13px; color: var(--text-tertiary); margin-bottom: 32px; }
 
+/* ── Import modal ── */
+.import-modal-select, .import-modal-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  background: var(--surface);
+  color: var(--text);
+  box-sizing: border-box;
+  font-family: inherit;
+}
+.import-modal-select:focus, .import-modal-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-bg);
+}
+.import-modal-select option {
+  color: var(--text);
+  background: var(--surface);
+}
+
 /* ── Cloud save banner ── */
 .cloud-banner {
   position: fixed;

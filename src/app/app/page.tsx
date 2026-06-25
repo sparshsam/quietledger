@@ -779,9 +779,6 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Hidden CSV/TSV file input — most banks export CSV; some use .tsv or .txt */}
-            <input ref={csvFileRef} type="file" accept=".csv,.tsv,.txt" onChange={handleCsvFile} style={{ display: 'none' }} />
-
             {/* Accounts strip — border to border */}
             <div className="data-strip" role="list" aria-label="Accounts">
               {visibleAccountsWithBalances.map((a) => (
@@ -1123,6 +1120,9 @@ export default function Home() {
           </ErrorBoundary>
         ) : null}
 
+      {/* Hidden file input for CSV import */}
+      <input ref={csvFileRef} type="file" accept=".csv,.tsv,.txt" onChange={handleCsvFile} style={{ display: 'none' }} />
+
       {/* Import transactions modal (renders outside tab switch) */}
       {showImportModal ? (
         <div className="sheet-overlay" onClick={() => { setShowImportModal(false); setImportCreateMode(false); }}>
@@ -1132,15 +1132,15 @@ export default function Home() {
               <button className="pill pill-ghost" onClick={() => { setShowImportModal(false); setImportCreateMode(false); }} style={{ border: 0, background: 'transparent', cursor: 'pointer', fontSize: 16 }} aria-label="Close">✕</button>
             </div>
 
-            {/* Step 1: Account + file */}
+            {/* Step 1: Account selection */}
             <div style={{ marginBottom: 'var(--space-lg)' }}>
-              <label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600 }}>Account</label>
+              <label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Account</label>
               {!importCreateMode ? (
                 <>
                   <select
                     value={defaultImportAccountId}
                     onChange={(e) => setDefaultImportAccountId(e.target.value)}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 14, background: 'var(--surface)' }}
+                    className="import-modal-select"
                   >
                     {activeAccounts.length === 0 ? (
                       <option value="">No accounts yet</option>
@@ -1162,12 +1162,12 @@ export default function Home() {
                     value={importCreateModeName}
                     onChange={(e) => setImportCreateModeName(e.target.value)}
                     placeholder="Account name (e.g. TD Chequing)"
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 14, boxSizing: 'border-box' }}
+                    className="import-modal-input"
                   />
                   <select
                     value={importCreateModeKind}
                     onChange={(e) => setImportCreateModeKind(e.target.value as AccountKind)}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 14, background: 'var(--surface)' }}
+                    className="import-modal-select"
                   >
                     {accountKindOptions.map((k) => (
                       <option key={k.value} value={k.value}>{k.label}</option>
