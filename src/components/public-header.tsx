@@ -36,7 +36,7 @@ export function PublicHeader() {
         }}
       >
         <Link
-          href={signedIn ? "/app" : "/"}
+          href="/"
           style={{
             fontSize: 18,
             fontWeight: 700,

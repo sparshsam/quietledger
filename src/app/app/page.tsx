@@ -691,10 +691,10 @@ export default function Home() {
 
       {/* Top navigation */}
       <nav className="navbar" aria-label="Navigation">
-        <button onClick={() => setActiveTab("Ledger")} className="navbar-brand" style={{ border: 0, background: 'transparent', cursor: 'pointer' }}>
+        <Link href="/" className="navbar-brand" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'inherit' }}>
           <img src="/icons/icon-source.png" alt="" style={{ width: 22, height: 22, borderRadius: 4 }} />
           OpenLedger
-        </button>
+        </Link>
         <div className="navbar-nav">
           {TABS.map((tab) => (
             <button
@@ -748,7 +748,7 @@ export default function Home() {
                 <Plus size={16} style={{ strokeWidth: 2.5 }} />
               </button>
               <button className="pill pill-primary" onClick={() => csvFileRef.current?.click()} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                Import bank statements
+                Import transactions
                 <Upload size={16} />
               </button>
               <button className="pill pill-secondary" onClick={() => downloadLedgerExport(currentLedgerData, importedTransactions, importMetadata)} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
