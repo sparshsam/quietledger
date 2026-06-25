@@ -8,6 +8,7 @@ import {
   computeMonthCashflow,
   computeMonthOverMonth,
   computeNetWorth,
+  computeEffectiveNetWorth,
 } from "@/lib/finance/totals";
 import { categoryTotals, monthlyTotals } from "@/lib/finance/grouping";
 import { budgetUtilization, remainingBudget, isOverBudget } from "@/lib/finance/budgets";
@@ -64,7 +65,7 @@ export function LedgerReport({
     }));
   }, [monthlyTxns]);
 
-  const netWorth = computeNetWorth(accounts);
+  const netWorth = computeEffectiveNetWorth(accounts, monthlyTxns);
 
   const catData = useMemo(() => {
     return categories.map(({ category, spent }) => ({

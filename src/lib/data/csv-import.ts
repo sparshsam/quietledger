@@ -157,8 +157,8 @@ export function buildImportPreview({
     // Auto-categorize from learned patterns if still uncategorized
     let finalCategory = category;
     let finalSubcategory: string | undefined;
-    if (category === "Misc" && learnings?.length) {
-      const result = autoCategorize(`${merchant || ""} ${description || ""}`, learnings);
+    if (category === "Misc") {
+      const result = autoCategorize(`${merchant || ""} ${description || ""}`, learnings ?? []);
       if (result) {
         finalCategory = result.parent;
         finalSubcategory = result.child;

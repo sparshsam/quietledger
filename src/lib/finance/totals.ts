@@ -21,6 +21,10 @@ export function computeNetWorth(accounts: Account[]): number {
   return accounts.reduce((sum, a) => sum + a.balance, 0);
 }
 
+export function computeEffectiveNetWorth(accounts: Account[], transactions: Transaction[]): number {
+  return accounts.reduce((sum, a) => sum + accountEffectiveBalance(a, transactions), 0);
+}
+
 function inMonth(transactions: Transaction[], month: string): Transaction[] {
   return transactions.filter((t) => t.date.startsWith(month));
 }
