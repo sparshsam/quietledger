@@ -5,29 +5,19 @@ export const dynamic = "force-dynamic";
 
 import {
   Archive,
-  ArrowRight,
   ArrowRightLeft,
   Banknote,
   BookOpen,
   CheckCircle2,
-  ChevronRight,
   CircleDollarSign,
   Copy,
   CreditCard,
-  Download,
-  FileText,
   Landmark,
-  Moon,
   Pencil,
   PiggyBank,
   Plus,
-  ReceiptText,
-  Repeat,
   Search,
   Settings,
-  ShieldCheck,
-  Sparkles,
-  Tag,
   Target,
   Trash2,
   Upload,
@@ -61,7 +51,7 @@ import {
 } from "@/lib/data/persistence";
 import { ledgerData } from "@/lib/data/seed";
 import { createScreenshotLedgerData } from "@/lib/data/screenshot-seed";
-import type { Account, AccountKind, Budget, CategoryPattern, Goal, ImportMetadata, LearnedCategory, LifeCostEvent, MonthlySnapshot, RecurringEntry, Transaction } from "@/lib/data/types";
+import type { Account, AccountKind, Budget, Goal, ImportMetadata, LearnedCategory, RecurringEntry, Transaction } from "@/lib/data/types";
 import { PwaRegister } from "@/components/pwa-register";
 import { TransactionsView } from "@/components/transactions-view";
 import { SearchView } from "@/components/search-view";
@@ -74,12 +64,11 @@ import { ReceiptGallery } from "@/components/receipt-gallery";
 import { DataManagementPanel } from "@/components/data-management-panel";
 import { McpTokensPanel } from "@/components/mcp-tokens-panel";
 import { ErrorBoundary } from "@/components/error-boundary";
-import { budgetUtilization, remainingBudget, isOverBudget } from "@/lib/finance/budgets";
+
 import { LedgerReport } from "@/components/ledger-report";
 import { ImportFlow } from "@/components/import-flow";
 import { AccountsView } from "@/components/accounts-view";
 import { recordCategoryLearning, loadCategoryLearnings } from "@/lib/data/persistence";
-import { goalProgress } from "@/lib/finance/goals";
 
 const currency = new Intl.NumberFormat("en-CA", {
   style: "currency",
@@ -270,33 +259,9 @@ export default function Home() {
     [selectedAccount.id, transactions],
   );
 
-  const monthsCurrent = useMemo(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-  }, []);
-
   const netWorth = useMemo(() => {
     return accountsWithBalances.reduce((sum, a) => sum + a.balance, 0);
   }, [accountsWithBalances]);
-
-  const monthlyIncome = useMemo(() => {
-    return transactions
-      .filter((t) => t.amount > 0 && t.date.startsWith(monthsCurrent))
-      .reduce((s, t) => s + t.amount, 0);
-  }, [transactions, monthsCurrent]);
-
-  const monthlyExpense = useMemo(() => {
-    return Math.abs(
-      transactions
-        .filter((t) => t.amount < 0 && t.date.startsWith(monthsCurrent))
-        .reduce((s, t) => s + t.amount, 0),
-    );
-  }, [transactions, monthsCurrent]);
-
-  const currentMonthBudgets = useMemo(
-    () => budgets.filter((b) => b.month === monthsCurrent),
-    [budgets, monthsCurrent],
-  );
 
   const recentTransactions = useMemo(
     () => transactions.slice(0, 10),

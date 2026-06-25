@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { Account, Transaction, Budget, Goal } from "@/lib/data/types";
+import type { Account, Transaction, Budget } from "@/lib/data/types";
 import {
   computeMonthIncome,
   computeMonthExpenses,

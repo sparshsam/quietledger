@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useMemo } from "react";
-import type { Account, AccountKind, ImportMetadata, LearnedCategory, Transaction } from "@/lib/data/types";
+import type { Account, ImportMetadata, LearnedCategory, Transaction } from "@/lib/data/types";
 import { parseCsv, buildImportPreview, summarizeImport, type ParsedCsv, type ImportPreviewRow, type CsvMapping } from "@/lib/data/csv-import";
 import { guessMapping } from "@/lib/data/csv-import";
 import { autoCategorize } from "@/lib/data/categories";
