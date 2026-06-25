@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import type { Budget, Transaction } from "@/lib/data/types";
-import { budgetUtilization, remainingBudget, isOverBudget } from "@/lib/finance/budgets";
+import { budgetUtilization, remainingBudget, isOverBudget, averageSpendingByCategory } from "@/lib/finance/budgets";
 
 const currency = new Intl.NumberFormat("en-CA", {
   style: "currency",
@@ -52,6 +52,12 @@ export function BudgetsPanel({
     }
     return grouped;
   }, [budgets]);
+
+  const suggestions = useMemo(() => {
+    return averageSpendingByCategory(transactions, 3).filter(
+      (s) => !budgets.some((b) => b.category === s.category && b.month === defaultMonth)
+    );
+  }, [transactions, budgets]);
 
   function handleSave() {
     const amount = Number(form.amount);
@@ -170,6 +176,24 @@ export function BudgetsPanel({
             </div>
           ))}
         </div>
+      )}
+
+      {suggestions.length > 0 && (
+        <section style={{ marginTop: "var(--space-xl)" }}>
+          <h3 className="section-title" style={{ fontSize: "var(--text-lg)" }}>Based on your spending</h3>
+          <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: "var(--space-md)" }}>
+            You typically spend this amount per month. Tap to create a budget.
+          </p>
+          {suggestions.map((s) => (
+            <div key={s.category} className="suggestion-row">
+              <span>{s.category}</span>
+              <span>{currency.format(s.monthlyAverage)}/mo</span>
+              <button className="pill pill-small" onClick={() => {
+                setForm({ category: s.category, month: defaultMonth, amount: s.monthlyAverage.toFixed(0) });
+              }}>Set budget</button>
+            </div>
+          ))}
+        </section>
       )}
     </div>
   );

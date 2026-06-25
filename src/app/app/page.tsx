@@ -857,7 +857,7 @@ export default function Home() {
         ) : activeTab === "Goals" ? (
           <ErrorBoundary key="goals">
           <div className="narrow">
-            <GoalsPanel goals={goals} onSave={saveGoal} onDelete={deleteGoal} onContribute={contributeToGoal} />
+            <GoalsPanel goals={goals} budgets={budgets} onSave={saveGoal} onDelete={deleteGoal} onContribute={contributeToGoal} onTabChange={(tab) => setActiveTab(tab as typeof activeTab)} />
           </div>
           </ErrorBoundary>
 

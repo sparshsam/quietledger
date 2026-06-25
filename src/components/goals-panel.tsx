@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Pencil, Trash2, ArrowUp, Plus } from "lucide-react";
-import type { Goal } from "@/lib/data/types";
+import type { Budget, Goal } from "@/lib/data/types";
 import { goalProgress } from "@/lib/finance/goals";
 
 const currency = new Intl.NumberFormat("en-CA", {
@@ -22,14 +22,18 @@ type GoalFormValues = {
 
 export function GoalsPanel({
   goals,
+  budgets,
   onSave,
   onDelete,
   onContribute,
+  onTabChange,
 }: {
   goals: Goal[];
+  budgets: Budget[];
   onSave: (goal: Goal) => void;
   onDelete: (id: string) => void;
   onContribute: (id: string, amount: number) => void;
+  onTabChange?: (tab: string) => void;
 }) {
   const [form, setForm] = useState<GoalFormValues>({ name: "", targetAmount: "", currentAmount: "0", targetDate: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -78,6 +82,18 @@ export function GoalsPanel({
 
   return (
     <div>
+      {budgets.length === 0 ? (
+        <div className="empty-state" style={{ padding: "var(--space-xl) 0", textAlign: "center" }}>
+          <p style={{ fontWeight: "bold", marginBottom: 8 }}>Start with budgets</p>
+          <p style={{ fontSize: 13, color: "var(--text-secondary)", maxWidth: 400, margin: "0 auto 16px" }}>
+            Goals are more meaningful after you understand your monthly spending. Set a few budgets first, then come back to create savings targets.
+          </p>
+          <button className="pill pill-primary" onClick={() => onTabChange?.("budgets")}>
+            Set budgets first
+          </button>
+        </div>
+      ) : (
+        <>
       {/* Header row */}
       <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>Track your saving milestones. Set a target, contribute regularly, and watch your progress grow.</p>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -167,6 +183,8 @@ export function GoalsPanel({
             );
           })}
         </div>
+      )}
+      </>
       )}
     </div>
   );
