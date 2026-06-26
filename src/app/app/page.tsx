@@ -69,6 +69,7 @@ import { LedgerReport } from "@/components/ledger-report";
 import { ImportFlow } from "@/components/import-flow";
 import { AccountsView } from "@/components/accounts-view";
 import { Select } from "@/components/select";
+import { DatePicker } from "@/components/date-picker";
 import { recordCategoryLearning, loadCategoryLearnings } from "@/lib/data/persistence";
 
 const currency = new Intl.NumberFormat("en-CA", {
@@ -1267,7 +1268,7 @@ function ManualTransactionForm({
       <div className="form-grid">
         <label>
           <span>Date</span>
-          <input type="date" value={values.date} onChange={(event) => onChange({ ...values, date: event.target.value })} />
+          <DatePicker value={values.date} onChange={(date) => onChange({ ...values, date })} />
         </label>
         <label>
           <span>Description</span>

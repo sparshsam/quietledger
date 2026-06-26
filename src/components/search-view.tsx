@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Search, X, Filter, Save } from "lucide-react";
 import type { Account, Transaction } from "@/lib/data/types";
 import { Select } from "@/components/select";
+import { DatePicker } from "@/components/date-picker";
 
 const currency = new Intl.NumberFormat("en-CA", {
   style: "currency",
@@ -350,19 +351,11 @@ export function SearchView({
             <div className="search-filter-row">
               <label>
                 <span>From</span>
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                />
+                <DatePicker value={dateFrom} onChange={setDateFrom} placeholder="From" />
               </label>
               <label>
                 <span>To</span>
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                />
+                <DatePicker value={dateTo} onChange={setDateTo} placeholder="To" />
               </label>
             </div>
             <div className="search-filter-row">

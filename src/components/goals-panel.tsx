@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Pencil, Trash2, ArrowUp, Plus } from "lucide-react";
 import type { Budget, Goal } from "@/lib/data/types";
+import { DatePicker } from "@/components/date-picker";
 import { goalProgress } from "@/lib/finance/goals";
 
 const currency = new Intl.NumberFormat("en-CA", {
@@ -113,7 +114,7 @@ export function GoalsPanel({
               <input className="ef-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Goal name" />
               <input className="ef-input" type="number" min="0" step="0.01" value={form.targetAmount} onChange={(e) => setForm({ ...form, targetAmount: e.target.value })} placeholder="Target amount" />
               <input className="ef-input" type="number" min="0" step="0.01" value={form.currentAmount} onChange={(e) => setForm({ ...form, currentAmount: e.target.value })} placeholder="Current amount" />
-              <input className="ef-input" type="date" value={form.targetDate} onChange={(e) => setForm({ ...form, targetDate: e.target.value })} />
+              <DatePicker value={form.targetDate} onChange={(d) => setForm({ ...form, targetDate: d })} />
               {error ? <span className="ef-error">{error}</span> : null}
               <div className="ef-actions">
                 <button className="pill pill-primary" onClick={handleSave}>{editingId ? "Save" : "Save"}</button>

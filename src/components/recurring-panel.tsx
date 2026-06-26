@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Plus, Pencil, Trash2, SkipForward, Play, Pause } from "lucide-react";
 import type { Account, RecurringEntry, RecurringFrequency } from "@/lib/data/types";
 import { Select } from "@/components/select";
+import { DatePicker } from "@/components/date-picker";
 import { generateUpcomingEntries, isDue, skipOccurrence } from "@/lib/finance/recurring";
 
 const currency = new Intl.NumberFormat("en-CA", {
@@ -570,26 +571,18 @@ export function RecurringPanel({
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <label style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 600 }}>
                   Next date
-                  <input
-                    className="ef-input"
-                    type="date"
-                    value={form.nextDate}
-                    onChange={(e) => setForm({ ...form, nextDate: e.target.value })}
-                    style={{ marginTop: 4 }}
-                  />
+                  <div style={{ marginTop: 4 }}>
+                    <DatePicker value={form.nextDate} onChange={(d) => setForm({ ...form, nextDate: d })} />
+                  </div>
                 </label>
                 <label style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 600 }}>
                   End date{" "}
                   <span style={{ fontWeight: 400, color: "var(--text-tertiary)" }}>
                     (optional)
                   </span>
-                  <input
-                    className="ef-input"
-                    type="date"
-                    value={form.endDate}
-                    onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-                    style={{ marginTop: 4 }}
-                  />
+                  <div style={{ marginTop: 4 }}>
+                    <DatePicker value={form.endDate} onChange={(d) => setForm({ ...form, endDate: d })} />
+                  </div>
                 </label>
               </div>
               <input
