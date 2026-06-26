@@ -730,7 +730,7 @@ export default function Home() {
             aria-label="Search ledger"
             title="Search ledger"
           >
-            <span style={{ fontSize: 14, lineHeight: 1 }}>&#x1F50D;</span>
+            <Search />
           </button>
           <button
             className="navbar-search-btn"
@@ -738,7 +738,7 @@ export default function Home() {
             aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
             title={darkMode ? "Light mode" : "Dark mode"}
           >
-            <span style={{ fontSize: 14, lineHeight: 1 }}>{darkMode ? "☀️" : "🌙"}</span>
+            {darkMode ? <Sun /> : <Moon />}
           </button>
         </div>
       </nav>

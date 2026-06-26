@@ -103,7 +103,7 @@ button, .btn, .pill {
 :disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ══ Navigation bar ══ */
-.navbar { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--space-lg); height: 60px; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 50; }
+.navbar { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--space-lg); height: 60px; background: var(--bg); position: sticky; top: 0; z-index: 50; }
 .navbar-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 700; font-size: 16px; color: var(--text); flex-shrink: 0; }
 .navbar-nav { display: flex; gap: 4px; position: absolute; left: 50%; transform: translateX(-50%); }
 .navbar-nav button, .navbar-nav a { border-radius: var(--radius-pill); padding: 8px 18px; font-size: 13px; font-weight: 600; border: none; background: transparent; color: var(--text-secondary); transition: background 150ms, color 150ms; white-space: nowrap; }
@@ -567,6 +567,13 @@ main.narrow, .narrow { max-width: 720px; margin-inline: auto; width: 100%; paddi
 .navbar-search-btn:hover {
   background: var(--accent-bg);
   color: var(--accent);
+}
+.navbar-search-btn svg,
+.navbar-search-btn img {
+  width: 16px;
+  height: 16px;
+  display: block;
+  flex-shrink: 0;
 }
 
 /* ══ Search overlay — fullscreen modal ══ */
