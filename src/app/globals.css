@@ -1905,18 +1905,18 @@ main.narrow, .narrow { max-width: 720px; margin-inline: auto; width: 100%; paddi
 .datepicker-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: 6px;
+  padding: 6px 14px;
   border-radius: 9999px;
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
   white-space: nowrap;
-  min-height: 36px;
+  min-height: 34px;
   font-family: inherit;
 }
 
@@ -1926,20 +1926,20 @@ main.narrow, .narrow { max-width: 720px; margin-inline: auto; width: 100%; paddi
 
 .datepicker-popover {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 4px);
   left: 0;
   z-index: 100;
-  width: 280px;
+  width: 224px;
   background: #FDFCF7;
   border: 1px solid rgba(26, 22, 18, 0.08);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(26, 22, 18, 0.1);
-  padding: 16px;
-  animation: datepicker-enter 0.12s ease;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(26, 22, 18, 0.08);
+  padding: 10px;
+  animation: datepicker-enter 0.1s ease;
 }
 
 @keyframes datepicker-enter {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(3px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -1947,69 +1947,66 @@ main.narrow, .narrow { max-width: 720px; margin-inline: auto; width: 100%; paddi
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .datepicker-month {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   color: var(--text);
 }
 
 .datepicker-nav {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: none;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.1s;
+  transition: background 0.1s, color 0.1s;
   padding: 0;
 }
 
 .datepicker-nav:hover {
   background: var(--bg);
-  color: var(--text);
+  color: var(--accent);
 }
 
 .datepicker-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-  margin-bottom: 6px;
+  gap: 1px;
+  margin-bottom: 4px;
 }
 
 .datepicker-weekday {
   text-align: center;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   color: var(--text-tertiary);
-  padding: 4px 0;
+  padding: 2px 0;
+  line-height: 1;
 }
 
 .datepicker-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-}
-
-.datepicker-empty {
-  height: 0;
+  gap: 1px;
 }
 
 .datepicker-day {
   width: 100%;
-  aspect-ratio: 1;
+  height: 26px;
   border: none;
   border-radius: 50%;
   background: transparent;
   color: var(--text);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
@@ -2017,15 +2014,12 @@ main.narrow, .narrow { max-width: 720px; margin-inline: auto; width: 100%; paddi
   justify-content: center;
   transition: background 0.1s, color 0.1s;
   font-family: inherit;
-  min-height: 34px;
+  padding: 0;
 }
 
 .datepicker-day:hover {
   background: var(--bg);
-}
-
-.datepicker-day.focused {
-  background: var(--bg);
+  color: var(--accent);
 }
 
 .datepicker-day.today {
