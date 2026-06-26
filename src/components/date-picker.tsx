@@ -43,14 +43,16 @@ export function DatePicker({ value, onChange, placeholder = "Select date", class
 
   // Initialize view to current month or selected month
   useEffect(() => {
-    if (parsed) {
-      setViewYear(parsed.getFullYear());
-      setViewMonth(parsed.getMonth());
-    } else {
-      const now = new Date();
-      setViewYear(now.getFullYear());
-      setViewMonth(now.getMonth());
-    }
+    queueMicrotask(() => {
+      if (parsed) {
+        setViewYear(parsed.getFullYear());
+        setViewMonth(parsed.getMonth());
+      } else {
+        const now = new Date();
+        setViewYear(now.getFullYear());
+        setViewMonth(now.getMonth());
+      }
+    });
   }, [open]); // reset when opening
 
   // Close on outside click

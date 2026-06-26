@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useRef, useMemo } from "react";
 import type { Account, ImportMetadata, LearnedCategory, Transaction } from "@/lib/data/types";
 import { Select } from "@/components/select";
 import { parseCsv, buildImportPreview, summarizeImport, type ParsedCsv, type CsvMapping } from "@/lib/data/csv-import";
@@ -20,12 +20,6 @@ type ImportFlowProps = {
 
 type Step = "account" | "upload" | "review";
 const STEP_ORDER: Step[] = ["account", "upload", "review"];
-
-function monthLabel(month: string) {
-  return new Intl.DateTimeFormat("en-CA", { month: "long", year: "numeric" }).format(
-    new Date(`${month}-01T12:00:00`),
-  );
-}
 
 export function ImportFlow({ accounts, transactions, learnings, onImport, onRecordLearning, onClose }: ImportFlowProps) {
   const [step, setStep] = useState<Step>("account");

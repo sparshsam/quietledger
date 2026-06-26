@@ -12,9 +12,9 @@ import {
 import { categoryTotals } from "@/lib/finance/grouping";
 import { budgetUtilization, remainingBudget, isOverBudget } from "@/lib/finance/budgets";
 import { MonthPicker } from "@/components/month-picker";
-import { ComparisonPills, COMPARISON_RANGES } from "@/components/comparison-pills";
+import { ComparisonPills } from "@/components/comparison-pills";
 import { AllMonthsBarChart } from "@/components/all-months-chart";
-import type { ComparisonRange, ComparisonResult } from "@/lib/finance/comparisons";
+import type { ComparisonRange } from "@/lib/finance/comparisons";
 import { computeExpenseComparison } from "@/lib/finance/comparisons";
 
 const currency = new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" });

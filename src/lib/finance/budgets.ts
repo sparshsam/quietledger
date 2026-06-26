@@ -1,5 +1,5 @@
 import type { Budget, Transaction } from "@/lib/data/types";
-import { monthlyTotals, categoryTotals, groupByCategory } from "./grouping";
+import { groupByCategory } from "./grouping";
 
 function spentInBudget(budget: Budget, transactions: Transaction[]): number {
   return transactions
@@ -36,7 +36,7 @@ export function findOverBudget(
 
 export function averageSpendingByCategory(
   transactions: Transaction[],
-  months: number,
+  _months: number,
 ): Array<{ category: string; monthlyAverage: number }> {
   const expenseTxns = transactions.filter((t) => t.amount < 0);
   const grouped = groupByCategory(expenseTxns);
