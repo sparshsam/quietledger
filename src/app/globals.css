@@ -51,19 +51,19 @@
   --shadow: 0 2px 8px rgba(26, 22, 18, 0.06);
 }
 
-/* ══ Dark mode ══ */
+/* ══ Dark mode — keep warmth, invert text ══ */
 [data-theme="dark"] {
-  --bg: #1A1612;
-  --surface: #242120;
-  --surface-secondary: #2E2A28;
-  --text: #F0ECE4;
-  --text-secondary: #A09888;
-  --text-tertiary: #706858;
-  --border: rgba(240, 236, 228, 0.08);
-  --accent: #C47A40;
-  --accent-hover: #D48A50;
-  --accent-bg: rgba(196, 122, 64, 0.12);
-  --positive: #33CC44;
+  --bg: #3A3228;
+  --surface: #4A4036;
+  --surface-secondary: #5A5046;
+  --text: #F0E8D8;
+  --text-secondary: #C8BEA8;
+  --text-tertiary: #9C9280;
+  --border: rgba(240, 232, 216, 0.08);
+  --accent: #D48A40;
+  --accent-hover: #E49A50;
+  --accent-bg: rgba(212, 138, 64, 0.12);
+  --positive: #44DD44;
   --negative: #ff4477;
   --shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
@@ -557,15 +557,15 @@ main.narrow, .narrow { max-width: 720px; margin-inline: auto; width: 100%; paddi
   height: 36px;
   border-radius: var(--radius-pill);
   border: none;
-  background: transparent;
-  color: var(--text-secondary);
+  background: var(--surface-secondary);
+  color: var(--text);
   cursor: pointer;
   transition: background 150ms, color 150ms;
   flex-shrink: 0;
 }
 .navbar-search-btn:hover {
-  background: var(--surface-secondary);
-  color: var(--text);
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 
 /* ══ Search overlay — fullscreen modal ══ */
