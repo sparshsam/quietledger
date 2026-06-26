@@ -61,6 +61,8 @@ export function LedgerReport({
   const remaining = computeMonthCashflow(monthlyTxns, month);
   const comparisonResult = computeExpenseComparison(filteredTxns, month, comparisonRange);
 
+  const visibleAccounts = useMemo(() => accounts.filter((a) => !a.archivedAt), [accounts]);
+
   const categories = useMemo(() => {
     const expenseTxns = monthlyTxns.filter((t) => t.amount < 0);
     const total = Math.abs(expenseTxns.reduce((s, t) => s + t.amount, 0));
@@ -250,10 +252,9 @@ export function LedgerReport({
             {currency.format(netWorth)}
           </span>
         </div>
-        <div className="net-worth-accounts">
-          {accounts
-            .filter((a) => !a.archivedAt)
-            .map((a) => {
+        {visibleAccounts.length > 1 && (
+          <div className="net-worth-accounts">
+            {visibleAccounts.map((a) => {
               const balance = accountEffectiveBalance(a, monthlyTxns);
               return (
                 <div key={a.id} className="net-worth-account-row">
@@ -269,7 +270,8 @@ export function LedgerReport({
                 </div>
               );
             })}
-        </div>
+          </div>
+        )}
       </section>
     </>
   );
