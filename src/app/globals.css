@@ -1265,29 +1265,6 @@ main.narrow, .narrow { max-width: 720px; margin-inline: auto; width: 100%; paddi
 }
 
 /* ══ Charts ══ */
-.charts-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-lg);
-  padding: var(--space-xl) 0;
-}
-
-@media (min-width: 768px) {
-  .charts-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.charts-grid svg {
-  width: 100%;
-  height: auto;
-  max-height: 200px;
-}
-
-@media (min-width: 768px) {
-  .charts-grid svg { max-height: 240px; }
-}
-
 /* ══ Budget Progress ══ */
 .budget-row {
   display: flex;
@@ -1621,4 +1598,49 @@ main.narrow, .narrow { max-width: 720px; margin-inline: auto; width: 100%; paddi
 .select-checkmark {
   font-size: 14px;
   color: #7A2F00;
+}
+
+/* ══ Full-width chart section ══ */
+.chart-section {
+  padding: var(--space-2xl) 0;
+}
+
+.chart-full-bleed {
+  width: calc(100% + 64px);
+  margin-left: -32px;
+  margin-right: -32px;
+}
+
+@media (max-width: 767px) {
+  .chart-full-bleed {
+    width: calc(100% + 32px);
+    margin-left: -16px;
+    margin-right: -16px;
+  }
+}
+
+.chart-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 4px 0;
+}
+
+.chart-bar-group {
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.chart-bar-group:hover rect {
+  opacity: 1 !important;
+}
+
+.chart-bar-group.active rect {
+  opacity: 0.95 !important;
+}
+
+.chart-bar-group.active:hover rect {
+  opacity: 1 !important;
 }
