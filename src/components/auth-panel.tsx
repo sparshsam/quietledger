@@ -26,26 +26,16 @@ export function AuthPanel({ user, profile, onSignOut }: AuthPanelProps) {
     setSigningIn(true);
     setError("");
     const supabase = createClient();
-    const redirectUrl = `${window.location.origin}/auth/callback`;
-
-    const { data, error: err } = await supabase.auth.signInWithOAuth({
+    const { error: err } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: redirectUrl,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
-
-    // Debug: log the full OAuth URL for inspection in browser DevTools
-    if (data?.url) {
-      console.log("[Auth] Full OAuth URL:", data.url);
-      console.log("[Auth] Expected redirect_to:", redirectUrl);
-    }
-
     if (err) {
       setError(err.message);
       setSigningIn(false);
     }
-    // signingIn stays true while OAuth redirect happens
   };
 
   const handleSignOut = async () => {

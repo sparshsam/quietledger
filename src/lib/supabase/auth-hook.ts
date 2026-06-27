@@ -26,36 +26,6 @@ export function useAuth() {
     const supabase = createClient();
 
     const init = async () => {
-      // Detect PKCE auth code in the URL (from OAuth redirect) and exchange it.
-      // This handles cases where Supabase Auth redirects the user to the Site URL
-      // (instead of our callback) due to redirect URL validation — the code is still
-      // usable as long as the PKCE code verifier cookie is accessible on this origin.
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-
-      if (code) {
-        try {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-          // Clean code from URL regardless of outcome so the page doesn't
-          // retry the same failed exchange on every render cycle.
-          const cleanUrl = window.location.pathname.replace(/\/auth\/callback/, "/app");
-          window.history.replaceState({}, "", cleanUrl);
-
-          if (error) {
-            console.error("[Auth] ExchangeCodeForSession returned error:", error.message);
-            return;
-          }
-
-          // Fall through to getSession() below — the exchange succeeded,
-          // the browser client stored the session in cookies, and
-          // getSession() will read it back.
-        } catch (err) {
-          console.error("[Auth] ExchangeCodeForSession threw:", err);
-          return;
-        }
-      }
-
       const { data } = await supabase.auth.getSession();
       const user = data.session?.user ?? null;
       let profile = null;
