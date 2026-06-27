@@ -32,15 +32,13 @@ export async function GET(request: Request) {
       },
     );
 
+    // Exchange the OAuth code for a Supabase session.
+    // This triggers the SSR client's onAuthStateChange handler, which calls
+    // applyServerStorage to write session cookies. The handler is async and
+    // runs on a microtask; we yield to the event loop so the handler completes
+    // and cookies are written to redirectResponse before it's returned.
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-    // Force the SSR onAuthStateChange handler (which calls applyServerStorage
-    // to write cookies) to finish before returning. The handler is async and
-    // may not complete before the response is sent, leaving the browser
-    // without session cookies.
-    if (!error) {
-      await supabase.auth.getSession();
-    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     if (!error) {
       return redirectResponse;
