@@ -93,6 +93,14 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // For Google avatar/profile images: network-only, never cache
+  // (SW fetch() triggers connect-src CSP; cache-first for these
+  //  would also violate CSP since the SW connects out to fetch.)
+  const url = new URL(event.request.url);
+  if (url.hostname === "lh3.googleusercontent.com") {
+    return;
+  }
+
   // For static assets: cache-first for speed and offline support
   event.respondWith(cacheFirst(event.request));
 });
