@@ -25,16 +25,82 @@ export function AuthPanel({ user, profile, onSignOut }: AuthPanelProps) {
   const handleGoogleSignIn = async () => {
     setSigningIn(true);
     setError("");
+
+    // Debug: verify env vars are present
+    const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const hasKey = !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    console.log("[Auth] Env: URL present:", hasUrl, "Key present:", hasKey);
+
     const supabase = createClient();
-    const { error: err } = await supabase.auth.signInWithOAuth({
+    const redirectTo = `${window.location.origin}/auth/callback`;
+
+    console.log("[Auth] Starting OAuth, redirectTo:", redirectTo);
+
+    const { data, error: err } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo,
+        queryParams: {
+          access_type: "offline",
+          prompt: "select_account",
+        },
       },
     });
+
+    console.log("[Auth] signInWithOAuth result:", {
+      hasData: !!data,
+      hasUrl: !!data?.url,
+      url: data?.url,
+      error: err?.message,
+    });
+
     if (err) {
+      console.error("[Auth] OAuth start failed:", err);
       setError(err.message);
       setSigningIn(false);
+      return;
+    }
+
+    if (data?.url) {
+      console.log("[Auth] Redirecting to:", data.url);
+      window.location.assign(data.url);
+    } else {
+      console.error("[Auth] No OAuth URL returned");
+      setError("Failed to initiate sign-in. Check console for details.");
+      setSigningIn(false);
+    }
+  };
+
+  const handleGoogleDebug = async () => {
+    setError("");
+    console.log("=== DEBUG: Direct OAuth test ===");
+    const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const hasKey = !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    console.log("Env URL:", hasUrl, "Key:", hasKey);
+    console.log("Origin:", window.location.origin);
+
+    const supabase = createClient();
+    const redirectTo = `${window.location.origin}/auth/callback`;
+    console.log("RedirectTo:", redirectTo);
+
+    const { data, error: err } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo,
+        queryParams: {
+          access_type: "offline",
+          prompt: "select_account",
+        },
+      },
+    });
+
+    console.log("Result:", { data, error: err?.message });
+
+    if (data?.url) {
+      console.log("Navigating to:", data.url);
+      window.location.assign(data.url);
+    } else {
+      console.log("No URL, error:", err);
     }
   };
 
@@ -73,7 +139,7 @@ export function AuthPanel({ user, profile, onSignOut }: AuthPanelProps) {
     );
   }
 
-  // Guest state — Google first, guest second
+  // Guest state
   return (
     <div className="auth-guest">
       <div className="auth-mode-label">
@@ -94,6 +160,25 @@ export function AuthPanel({ user, profile, onSignOut }: AuthPanelProps) {
         <GoogleIcon />
         {signingIn ? "Redirecting…" : "Continue with Google"}
       </button>
+
+      {/* Debug button — only shown in development */}
+      {process.env.NODE_ENV !== "production" && (
+        <button
+          onClick={handleGoogleDebug}
+          style={{
+            marginTop: 8,
+            fontSize: 11,
+            color: "var(--text-tertiary)",
+            background: "none",
+            border: "1px dashed var(--border)",
+            borderRadius: 999,
+            padding: "6px 14px",
+            cursor: "pointer",
+          }}
+        >
+          Debug Google OAuth
+        </button>
+      )}
 
       <p className="gentle-help" style={{ fontSize: 13, marginTop: 12, textAlign: "center" }}>
         No Google account? All features work in guest mode.
