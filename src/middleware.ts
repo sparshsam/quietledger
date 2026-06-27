@@ -14,7 +14,6 @@ export async function middleware(request: NextRequest) {
 
   if (code && pathname !== "/auth/callback") {
     const callbackUrl = new URL("/auth/callback", request.url);
-    // Preserve the code and any other params (like next)
     callbackUrl.search = searchParams.toString();
     return NextResponse.redirect(callbackUrl);
   }
