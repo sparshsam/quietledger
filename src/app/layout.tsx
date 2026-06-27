@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     "money management",
   ],
   other: {
-    "application-version": "0.10.1",
+    "application-version": "0.10.2",
   },
   appleWebApp: {
     title: "OpenLedger",

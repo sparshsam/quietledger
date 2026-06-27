@@ -2,6 +2,23 @@
 
 All notable changes to OpenLedger will be documented here.
 
+## 0.10.2 — 2026-06-27
+
+- **Auth rebuild.** Complete rewrite matching OpenSprout's working pattern. Root cause: Supabase project mismatch — auth cookie was set for OpenSprout's project (`rbdyrymtgfqqkdemicdo`) instead of OpenLedger's (`qoxmibmbyjmkntzrckyr`). Missing `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` on Vercel caused silent PKCE exchange failure. Stale OpenSprout cookies on localhost (same domain) polluted session state.
+- **Middleware stripped** of all Supabase auth logic. No more `getUser()` on every request.
+- **Callback rewritten** — `request.cookies.getAll()`, no delays, no manual parsing. Matches OpenSprout exactly.
+- **Browser client** — publishable key, explicit PKCE, `detectSessionInUrl: true`.
+- **Server client** — switched from anon key to publishable key.
+- **`clearWrongProjectCookies()`** — auto-clears stale Supabase cookies from other projects on every page load.
+- **Manual OAuth redirect** — `window.location.assign(data.url)` instead of relying on Supabase auto-redirect.
+- **Auth logs** gated behind `localStorage.setItem("DEBUG_AUTH", "true")`.
+- **CDN caching fixed.** Vercel was caching HTML pages for 1 year (default `s-maxage=31536000`). Added explicit `Cache-Control: no-cache` headers. Service worker `sw.js` was excluded from no-cache regex (`.js` in exclusion list). Fixed with explicit `/sw.js` rule.
+- **Service worker upgrade.** `skipWaiting()` on install, proactive cache refresh on activate. Google avatar images bypassed (no SW interception) to avoid `connect-src` CSP violations.
+- **CSP updates.** `'unsafe-eval'` for dev mode. `https://lh3.googleusercontent.com` in `img-src` and `connect-src`.
+- **Backup 406 fix.** `.single()` → `.maybeSingle()` when no backup exists.
+- **MCP tokens 500 fix.** GET handler uses authenticated client (not service role) — works on localhost without `SUPABASE_SERVICE_ROLE_KEY`.
+- **UI polish.** Net worth moved to summary strip. Import button on Transactions tab. Dark mode fixes (import modal, Select, badges). Add account button + kind badges on Accounts tab.
+
 ## 0.10.1 — 2026-06-26
 
 - **CDN caching fix.** Vercel was caching HTML pages at the CDN edge for up to a year. Added explicit `Cache-Control: private, no-cache, no-store, must-revalidate` headers for all HTML routes in `next.config.ts` and middleware. Users now always see the latest deployed version regardless of browser or cache state. See PR for full root-cause analysis.

@@ -5,7 +5,7 @@
 OpenLedger is a private, local-first finance tool for everyday budgeting and records.
 Built with Next.js + TypeScript. Formerly QuietLedger.
 
-**Current Release:** v0.10.1 (2026-06-27)
+**Current Release:** v0.10.2 (2026-06-27)
 **Live domain:** https://ledger.kovina.org (formerly https://openledgerbysparsh.vercel.app)
 **Deploy status:** Production — auth fully rebuilt and verified.
 
@@ -31,7 +31,7 @@ Releases:
 - **Deployment:** Vercel → https://ledger.kovina.org
 - **GitHub:** https://github.com/sparshsam/openledger
 
-## Status — v0.10.1 (Auth Rebuild + CDN Caching Fix)
+## Status — v0.10.2 (Auth Rebuild & Production Stability)
 
 ### Auth — Complete Rebuild (June 27)
 The Google OAuth auth flow was completely rebuilt after root cause analysis revealed a Supabase **project mismatch**: the auth cookie was being set for OpenSprout's project (`rbdyrymtgfqqkdemicdo`) instead of OpenLedger's (`qoxmibmbyjmkntzrckyr`). This happened because `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` was missing from Vercel env (so the server callback silently failed), AND stale OpenSprout cookies on localhost were being read as valid sessions.
