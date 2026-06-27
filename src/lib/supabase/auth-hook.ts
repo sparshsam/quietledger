@@ -25,22 +25,38 @@ export function useAuth() {
   useEffect(() => {
     const supabase = createClient();
 
-    const getInitialSession = async () => {
+    const init = async () => {
+      // Detect PKCE auth code in the URL (from OAuth redirect) and exchange it.
+      // This handles cases where Supabase Auth redirects the user to the Site URL
+      // (instead of our callback) due to redirect URL validation — the code is still
+      // usable as long as the PKCE code verifier cookie is accessible on this origin.
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+
+      if (code) {
+        // Exchange the PKCE code for a session on the client side.
+        // This runs before getSession() so the session is ready.
+        await supabase.auth.exchangeCodeForSession(code);
+
+        // Clean the code from the URL without a full page reload
+        const url = new URL(window.location.href);
+        url.searchParams.delete("code");
+        window.history.replaceState({}, "", url.pathname + url.search);
+      }
+
       const { data } = await supabase.auth.getSession();
       const user = data.session?.user ?? null;
       let profile = null;
 
       if (user) {
         profile = await fetchProfile(supabase, user.id);
-
-        // Register device silently on sign-in
         registerDevice().catch(() => {});
       }
 
       setState({ user, session: data.session, loading: false, profile });
     };
 
-    getInitialSession();
+    init();
 
     const {
       data: { subscription },
@@ -56,8 +72,6 @@ export function useAuth() {
           user.email as string | undefined,
           user.user_metadata?.avatar_url as string | undefined,
         );
-
-        // Register device silently on sign-in
         registerDevice().catch(() => {});
       }
 
@@ -87,7 +101,6 @@ async function fetchProfile(
 
   if (existing) return existing;
 
-  // Create profile on first sign-in
   const { data: created } = await supabase
     .from("openledger_profiles")
     .insert({

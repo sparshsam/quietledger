@@ -172,6 +172,7 @@ export default function Home() {
   const [darkMode, setDarkMode] = useState(false);
   const screenshotModeRef = useRef(false);
   const [showTxForm, setShowTxForm] = useState(false);
+  const [showAccountForm, setShowAccountForm] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showQuickJump, setShowQuickJump] = useState(false);
   const [parsedCsv, setParsedCsv] = useState<ParsedCsv | null>(null);
@@ -771,10 +772,16 @@ export default function Home() {
           <>
             <div style={{ marginBottom: 'var(--space-lg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 className="section-title" style={{ margin: 0 }}>Ledger entries</h2>
-              <button className="pill pill-primary" onClick={() => setShowTxForm(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                New entry
-                <Plus size={16} style={{ strokeWidth: 2.5 }} />
-              </button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="pill pill-secondary" onClick={() => setShowImportModal(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <Upload size={16} style={{ strokeWidth: 2.5 }} />
+                  Import
+                </button>
+                <button className="pill pill-primary" onClick={() => setShowTxForm(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  New entry
+                  <Plus size={16} style={{ strokeWidth: 2.5 }} />
+                </button>
+              </div>
             </div>
             <TransactionsView transactions={transactions} accounts={accounts} />
 
@@ -827,12 +834,32 @@ export default function Home() {
         ) : activeTab === "Accounts" ? (
           <ErrorBoundary key="accounts">
           <div className="narrow">
+            <div style={{ marginBottom: 'var(--space-lg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 className="section-title" style={{ margin: 0 }}>Accounts</h2>
+              <button className="pill pill-primary" onClick={() => { setAccountForm({ name: "", kind: "chequing", subtitle: "", balance: "" }); setAccountError(""); setShowAccountForm(true); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Plus size={16} style={{ strokeWidth: 2.5 }} />
+                Add account
+              </button>
+            </div>
             <AccountsView
               accounts={accounts}
               transactions={transactions}
               activeAccountId={activeAccountFilter}
               onSelectAccount={setActiveAccountFilter}
             />
+
+            {showAccountForm ? (
+              <div className="sheet-overlay" onClick={() => setShowAccountForm(false)}>
+                <div className="sheet" onClick={(e) => e.stopPropagation()}>
+                  <h2>{accountForm.id ? "Edit account" : "Create account"}</h2>
+                  <AccountManagement values={accountForm} accounts={accountsWithBalances} error={accountError}
+                    onChange={setAccountForm} onSave={() => { saveAccount(); setShowAccountForm(false); }}
+                    onCancel={() => { setAccountForm({ name: "", kind: "chequing", subtitle: "", balance: "" }); setAccountError(""); setShowAccountForm(false); }}
+                    onEdit={(a) => { editAccount(a); setShowAccountForm(true); }}
+                    onArchive={archiveAccount} />
+                </div>
+              </div>
+            ) : null}
           </div>
           </ErrorBoundary>
 

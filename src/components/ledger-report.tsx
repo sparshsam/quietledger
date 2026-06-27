@@ -99,7 +99,7 @@ export function LedgerReport({
         )}
       </div>
 
-      {/* Summary Strip — numbers first */}
+      {/* Summary Strip — numbers first, net worth prominent */}
       <div className="month-summary">
         <div className="month-summary-item">
           <span className="month-summary-value positive">
@@ -128,6 +128,19 @@ export function LedgerReport({
           </span>
           <span className="month-summary-label text-xs font-bold tracking-wider uppercase">
             Remaining
+          </span>
+        </div>
+        <div className="month-summary-item net-worth-spot">
+          <span
+            className={
+              "month-summary-value net-worth-spot-value " +
+              (netWorth >= 0 ? "positive" : "negative")
+            }
+          >
+            {currency.format(netWorth)}
+          </span>
+          <span className="month-summary-label text-xs font-bold tracking-wider uppercase">
+            Net worth
           </span>
         </div>
       </div>
@@ -227,15 +240,9 @@ export function LedgerReport({
         </section>
       )}
 
-      {/* Net Worth — enlarged */}
-      <section className="net-worth-section">
-        <div className="net-worth-main">
-          <span className="net-worth-label">Net worth</span>
-          <span className="net-worth-value">
-            {currency.format(netWorth)}
-          </span>
-        </div>
-        {visibleAccounts.length > 1 && (
+      {/* Account breakdown — previously part of net worth section */}
+      {visibleAccounts.length > 1 && (
+        <section className="report-section" style={{ paddingTop: 0 }}>
           <div className="net-worth-accounts">
             {visibleAccounts.map((a) => {
               const balance = accountEffectiveBalance(a, monthlyTxns);
@@ -254,8 +261,8 @@ export function LedgerReport({
               );
             })}
           </div>
-        )}
-      </section>
+        </section>
+      )}
     </>
   );
 }

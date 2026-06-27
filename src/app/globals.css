@@ -1410,6 +1410,12 @@ main.narrow, .narrow { max-width: 720px; margin-inline: auto; width: 100%; paddi
   font-weight: 700;
 }
 
+.account-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .account-card-sub {
   font-size: 12px;
   color: var(--text-secondary);
@@ -1425,7 +1431,7 @@ main.narrow, .narrow { max-width: 720px; margin-inline: auto; width: 100%; paddi
 /* ══ Import Flow ══ */
 /* ══ Import Modal (Premium) ══ */
 .import-modal {
-  background: #FDFCF7;
+  background: var(--surface);
   border-radius: 24px;
   width: min(640px, calc(100vw - 48px));
   max-height: calc(100vh - 80px);
@@ -1873,6 +1879,45 @@ main.narrow, .narrow { max-width: 720px; margin-inline: auto; width: 100%; paddi
   font-size: 14px;
   color: #7A2F00;
 }
+
+/* ══ Select — dark mode ══ */
+[data-theme="dark"] .select-trigger {
+  background: var(--surface-secondary);
+  color: var(--text);
+}
+[data-theme="dark"] .select-trigger:hover {
+  background: color-mix(in srgb, var(--surface-secondary) 85%, black);
+}
+[data-theme="dark"] .select-popover {
+  background: var(--surface);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .select-option {
+  color: var(--text);
+}
+[data-theme="dark"] .select-option:hover,
+[data-theme="dark"] .select-option.focused {
+  background: var(--surface-secondary);
+}
+[data-theme="dark"] .select-option.selected {
+  color: var(--accent);
+}
+[data-theme="dark"] .select-checkmark {
+  color: var(--accent);
+}
+
+/* ══ Sheet overlay — dark mode ══ */
+[data-theme="dark"] .sheet-overlay {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* ══ Account kind badges — dark mode ══ */
+[data-theme="dark"] .account-kind-badge.badge-chq { background: rgba(0, 102, 204, 0.2); color: #66b3ff; }
+[data-theme="dark"] .account-kind-badge.badge-cc { background: rgba(204, 0, 0, 0.2); color: #ff6666; }
+[data-theme="dark"] .account-kind-badge.badge-sav { background: rgba(0, 102, 0, 0.2); color: #66cc66; }
+[data-theme="dark"] .account-kind-badge.badge-loan { background: rgba(204, 102, 0, 0.2); color: #ffaa33; }
+[data-theme="dark"] .account-kind-badge.badge-crypto { background: rgba(136, 0, 204, 0.2); color: #bb66ff; }
+[data-theme="dark"] .account-kind-badge.badge-misc { background: rgba(102, 102, 102, 0.2); color: #bbbbbb; }
 
 /* ══ Full-width chart section ══ */
 .chart-section {

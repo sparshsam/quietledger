@@ -30,7 +30,7 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' https://vercel.live",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob:",
               "connect-src 'self' https://*.supabase.co",
@@ -46,10 +46,28 @@ const nextConfig: NextConfig = {
       // ── HTML page routes — PREVENT CDN CACHING ──
       // This is the critical fix: without this, Vercel caches HTML pages
       // at the CDN edge for up to a year, serving stale content to every visitor.
-      // The regex excludes known static asset paths so their caching is unaffected.
+      // The regex excludes known content-hashed static asset paths so their
+      // caching is unaffected.
       {
         source:
-          "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|js|css|json|wasm|woff2?)$).*)",
+          "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|json|wasm|woff2?)$).*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value:
+              "private, no-cache, no-store, max-age=0, must-revalidate",
+          },
+          { key: "Pragma", value: "no-cache" },
+          { key: "Expires", value: "0" },
+        ],
+      },
+
+      // ── Service worker — MUST NEVER BE CACHED BY CDN ──
+      // The browser compares sw.js byte-for-byte to detect SW updates.
+      // If Vercel caches it at the edge, the browser never sees a new
+      // version and the old SW serves stale HTML indefinitely.
+      {
+        source: "/sw.js",
         headers: [
           {
             key: "Cache-Control",
