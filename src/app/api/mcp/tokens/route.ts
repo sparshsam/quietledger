@@ -105,8 +105,9 @@ export async function GET() {
       );
     }
 
-    const admin = createAdminClient();
-    const { data, error } = await admin
+    // Use the authenticated client — RLS policy allows users to SELECT
+    // their own tokens (auth.uid() = user_id). No need for service role.
+    const { data, error } = await supabase
       .from("openledger_mcp_tokens")
       .select("id, name, token_prefix, last_used_at, created_at, revoked_at")
       .eq("user_id", user.id)

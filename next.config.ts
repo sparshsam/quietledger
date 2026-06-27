@@ -32,7 +32,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: blob:",
+              "img-src 'self' data: blob: https://lh3.googleusercontent.com",
               "connect-src 'self' https://*.supabase.co",
               "manifest-src 'self'",
               "font-src 'self' data:",

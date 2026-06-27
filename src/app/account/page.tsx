@@ -28,14 +28,36 @@ export default function AccountPage() {
     setSigningIn(true);
     setError("");
     const supabase = createClient();
-    const { error: err } = await supabase.auth.signInWithOAuth({
+    const redirectTo = `${window.location.origin}/auth/callback`;
+
+    console.log("[Auth] Starting OAuth from /account, redirectTo:", redirectTo);
+
+    const { data, error: err } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo,
+        queryParams: {
+          access_type: "offline",
+          prompt: "select_account",
+        },
       },
     });
+
+    console.log("[Auth] signInWithOAuth result:", {
+      hasUrl: !!data?.url,
+      error: err?.message,
+    });
+
     if (err) {
       setError(err.message);
+      setSigningIn(false);
+      return;
+    }
+
+    if (data?.url) {
+      window.location.assign(data.url);
+    } else {
+      setError("Failed to initiate sign-in.");
       setSigningIn(false);
     }
   };

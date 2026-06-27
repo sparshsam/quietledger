@@ -1,39 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          for (const { name, value } of cookiesToSet) {
-            request.cookies.set(name, value);
-          }
-          supabaseResponse = NextResponse.next({ request });
-          for (const { name, value, options } of cookiesToSet) {
-            supabaseResponse.cookies.set(name, value, options);
-          }
-        },
-      },
-    },
-  );
-
-  await supabase.auth.getUser();
+  const response = NextResponse.next({ request });
 
   // Prevent CDN from caching HTML pages
-  supabaseResponse.headers.set(
+  response.headers.set(
     "Cache-Control",
     "private, no-cache, no-store, max-age=0, must-revalidate",
   );
 
-  return supabaseResponse;
+  return response;
 }
 
 export const config = {

@@ -5,6 +5,18 @@ import { createClient } from "@/lib/supabase/client";
 import { registerDevice } from "@/lib/supabase/device";
 import type { User } from "@supabase/supabase-js";
 
+const EXPECTED_PROJECT_REF = "qoxmibmbyjmkntzrckyr";
+
+/** Enable verbose auth logging. Set localStorage DEBUG_AUTH=true. */
+function isDebugAuth(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return localStorage.getItem("DEBUG_AUTH") === "true";
+  } catch {
+    return false;
+  }
+}
+
 type AuthState = {
   user: User | null;
   session: unknown;
@@ -13,6 +25,29 @@ type AuthState = {
 };
 
 export type AuthMode = "guest" | "signed-in";
+
+/**
+ * Clears all Supabase session cookies whose project ref does NOT match
+ * the expected OpenLedger project. Prevents stale sessions from other apps
+ * (e.g. OpenSprout on the same localhost domain) from being treated as valid.
+ */
+function clearWrongProjectCookies() {
+  const expectedPrefix = `sb-${EXPECTED_PROJECT_REF}-auth-token`;
+  const cookies = document.cookie.split("; ").filter(Boolean);
+  let cleared = 0;
+
+  for (const cookie of cookies) {
+    const name = cookie.split("=")[0];
+    if (name.startsWith("sb-") && !name.startsWith(expectedPrefix)) {
+      document.cookie = `${name}=; path=/; max-age=0; sameSite=lax`;
+      cleared++;
+    }
+  }
+
+  if (cleared > 0) {
+    console.warn(`[AUTH] Cleared ${cleared} stale Supabase cookie(s) from other projects`);
+  }
+}
 
 export function useAuth() {
   const [state, setState] = useState<AuthState>({
@@ -23,44 +58,40 @@ export function useAuth() {
   });
 
   useEffect(() => {
+    clearWrongProjectCookies();
+
     const supabase = createClient();
+    const debug = isDebugAuth();
 
     const init = async () => {
-      // Detect PKCE auth code in the URL (from OAuth redirect) and exchange it.
-      // This handles cases where Supabase Auth redirects the user to the Site URL
-      // (instead of our callback) due to redirect URL validation — the code is still
-      // usable as long as the PKCE code verifier cookie is accessible on this origin.
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
+      if (debug) console.log("[AUTH] Calling getSession()");
+      const { data, error } = await supabase.auth.getSession();
 
-      if (code) {
-        try {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+      const urlMatch = supabaseUrl.match(/https?:\/\/([^.]+)\.supabase\.co/);
+      const activeRef = urlMatch?.[1] ?? "unknown";
 
-          // Clean code from URL regardless of outcome so the page doesn't
-          // retry the same failed exchange on every render cycle.
-          const cleanUrl = window.location.pathname.replace(/\/auth\/callback/, "/app");
-          window.history.replaceState({}, "", cleanUrl);
-
-          if (error) {
-            console.error("[Auth] ExchangeCodeForSession returned error:", error.message);
-            return;
-          }
-
-          // Fall through to getSession() below — the exchange succeeded,
-          // the browser client stored the session in cookies, and
-          // getSession() will read it back.
-        } catch (err) {
-          console.error("[Auth] ExchangeCodeForSession threw:", err);
-          return;
-        }
+      if (debug) {
+        console.log("[AUTH] getSession():", {
+          supabaseUrlRef: activeRef,
+          expectedRef: EXPECTED_PROJECT_REF,
+          refsMatch: activeRef === EXPECTED_PROJECT_REF,
+          hasSession: !!data.session,
+          hasUser: !!data.session?.user,
+        });
       }
 
-      const { data } = await supabase.auth.getSession();
+      if (activeRef !== EXPECTED_PROJECT_REF) {
+        console.error(
+          `[AUTH] CRITICAL: SUPABASE_URL ref "${activeRef}" != expected "${EXPECTED_PROJECT_REF}". Auth will not work.`,
+        );
+      }
+
       const user = data.session?.user ?? null;
       let profile = null;
 
       if (user) {
+        if (debug) console.log("[AUTH] User found, fetching profile");
         profile = await fetchProfile(supabase, user.id);
         registerDevice().catch(() => {});
       }
@@ -72,22 +103,29 @@ export function useAuth() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (debug) {
+        console.log("[AUTH] Event:", event, "| Session:", !!session, "| User:", session?.user?.id?.substring(0, 12));
+      }
+
       const user = session?.user ?? null;
       let profile = null;
 
       if (user) {
-        profile = await fetchProfile(
+        fetchProfile(
           supabase,
           user.id,
           user.user_metadata?.full_name as string | undefined,
           user.email as string | undefined,
           user.user_metadata?.avatar_url as string | undefined,
-        );
-        registerDevice().catch(() => {});
+        ).then((p) => {
+          profile = p;
+          registerDevice().catch(() => {});
+          setState({ user, session, loading: false, profile: p });
+        });
+      } else {
+        setState({ user, session, loading: false, profile });
       }
-
-      setState({ user, session, loading: false, profile });
     });
 
     return () => {
