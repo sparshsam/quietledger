@@ -4,3 +4,6 @@ export * from "./insights";
 export * from "./trends";
 export * from "./budgets";
 export * from "./goals";
+export * from "./currency";
+export * from "./currency-conversion";
+export * from "./exchange-rates";

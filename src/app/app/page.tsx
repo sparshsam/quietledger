@@ -35,14 +35,13 @@ import { CloudBackupPanel } from "@/components/cloud-backup-panel";
 import {
   buildImportPreview,
   guessMapping,
-  hasError,
   parseCsv,
   summarizeImport,
   type CsvField,
   type CsvMapping,
-  type ImportPreviewRow,
   type ParsedCsv,
 } from "@/lib/data/csv-import";
+import type { ImportPreviewRow } from "@/lib/data/types";
 import { downloadLedgerExport } from "@/lib/data/export";
 import {
   clearLedgerState,
@@ -53,7 +52,9 @@ import {
 } from "@/lib/data/persistence";
 import { ledgerData } from "@/lib/data/seed";
 import { createScreenshotLedgerData } from "@/lib/data/screenshot-seed";
-import type { Account, AccountKind, Budget, Goal, ImportMetadata, LearnedCategory, RecurringEntry, Transaction } from "@/lib/data/types";
+import type { Account, AccountKind, Budget, Goal, ImportMetadata, ImportSession, LearnedCategory, RecurringEntry, Transaction } from "@/lib/data/types";
+import type { CurrencySettings } from "@/lib/data/types";
+import { DEFAULT_CURRENCY_SETTINGS } from "@/lib/data/types";
 import { PwaRegister } from "@/components/pwa-register";
 import { TransactionsView } from "@/components/transactions-view";
 import { SearchView } from "@/components/search-view";
@@ -72,7 +73,8 @@ import { ImportFlow } from "@/components/import-flow";
 import { AccountsView } from "@/components/accounts-view";
 import { Select } from "@/components/select";
 import { DatePicker } from "@/components/date-picker";
-import { recordCategoryLearning, loadCategoryLearnings } from "@/lib/data/persistence";
+import { CurrencySettingsPanel } from "@/components/currency-settings-panel";
+import { recordCategoryLearning, loadCategoryLearnings, loadCurrencySettings, saveCurrencySettings } from "@/lib/data/persistence";
 
 const currency = new Intl.NumberFormat("en-CA", {
   style: "currency",
@@ -162,6 +164,7 @@ export default function Home() {
   const [memories, setMemories] = useState(ledgerData.memories);
   const [forecastItems, setForecastItems] = useState(ledgerData.forecastItems);
   const [importMetadata, setImportMetadata] = useState<ImportMetadata[]>([]);
+  const [importSessions, setImportSessions] = useState<ImportSession[]>([]);
   const [budgets, setBudgets] = useState(ledgerData.budgets);
   const [goals, setGoals] = useState(ledgerData.goals);
   const [recurringEntries, setRecurringEntries] = useState<RecurringEntry[]>(ledgerData.recurringEntries ?? []);
@@ -170,6 +173,7 @@ export default function Home() {
   const [storageNotice, setStorageNotice] = useState("Loading local ledger...");
   const [hydrated, setHydrated] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [currencySettings, setCurrencySettings] = useState<CurrencySettings>(DEFAULT_CURRENCY_SETTINGS);
   const screenshotModeRef = useRef(false);
   const [showTxForm, setShowTxForm] = useState(false);
   const [showAccountForm, setShowAccountForm] = useState(false);
@@ -256,9 +260,9 @@ export default function Home() {
         : [],
     [activeAccounts, csvMapping, currentImportId, defaultImportAccountId, parsedCsv, transactions],
   );
-  const validImportRows = importPreview.filter((row) => row.transaction && !hasError(row) && !row.duplicate);
+  const validImportRows = importPreview.filter((row) => row.transaction && !row.warnings.some(w => w.level === "error") && !row.duplicate);
   const duplicateImportRows = importPreview.filter((row) => row.duplicate);
-  const errorImportRows = importPreview.filter(hasError);
+  const errorImportRows = importPreview.filter((row) => row.warnings.some(w => w.level === "error"));
 
   const transactionsForAccount = useMemo(
     () => transactions.filter((transaction) => transaction.accountId === selectedAccount?.id),
@@ -302,7 +306,7 @@ export default function Home() {
       screenshotModeRef.current = true;
       const demo = createScreenshotLedgerData();
       applyLedgerState({
-        schemaVersion: 1,
+        schemaVersion: 2,
         savedAt: new Date().toISOString(),
         accounts: demo.accounts,
         transactions: demo.transactions,
@@ -310,6 +314,7 @@ export default function Home() {
         memories: demo.memories,
         forecastItems: demo.forecastItems,
         importMetadata: demo.importMetadata ?? [],
+        importSessions: [],
         budgets: demo.budgets,
         goals: demo.goals,
         recurringEntries: demo.recurringEntries ?? [],
@@ -331,6 +336,8 @@ export default function Home() {
           (result.source === "saved" ? "Local ledger restored from this browser." : "Demo ledger loaded. Changes will save locally."),
       );
       setCategoryLearnings(loadCategoryLearnings(window.localStorage));
+      const savedCurrencySettings = loadCurrencySettings(window.localStorage);
+      if (savedCurrencySettings) setCurrencySettings(savedCurrencySettings);
       setHydrated(true);
     }, 0);
   }, []);
@@ -349,6 +356,7 @@ export default function Home() {
       memories,
       forecastItems,
       importMetadata,
+      importSessions,
       budgets,
       goals,
       recurringEntries,
@@ -356,7 +364,13 @@ export default function Home() {
     setLastSavedAt(saved.savedAt);
     setStorageNotice(nextSaveNoticeRef.current ?? "Local ledger saved.");
     nextSaveNoticeRef.current = null;
-  }, [accounts, budgets, forecastItems, goals, hydrated, importMetadata, memories, monthlySnapshots, recurringEntries, transactions]);
+  }, [accounts, budgets, forecastItems, goals, hydrated, importMetadata, importSessions, memories, monthlySnapshots, recurringEntries, transactions]);
+
+  // Persist currency settings
+  useEffect(() => {
+    if (!hydrated) return;
+    saveCurrencySettings(window.localStorage, currencySettings);
+  }, [hydrated, currencySettings]);
 
   // Quick jump keyboard shortcut (Ctrl+K / Cmd+K)
   useEffect(() => {
@@ -379,6 +393,7 @@ export default function Home() {
     setMemories(state.memories);
     setForecastItems(state.forecastItems);
     setImportMetadata(state.importMetadata);
+    setImportSessions(state.importSessions ?? []);
     setBudgets(state.budgets);
     setGoals(state.goals);
     setRecurringEntries(state.recurringEntries);
@@ -763,6 +778,8 @@ export default function Home() {
               activeCategory={activeCategoryFilter}
               activeAccountId={activeAccountFilter}
               onCategoryFilter={setActiveCategoryFilter}
+              baseCurrency={currencySettings.baseCurrency}
+              locale={currencySettings.locale}
             />
           </div>
           </ErrorBoundary>
@@ -783,7 +800,7 @@ export default function Home() {
                 </button>
               </div>
             </div>
-            <TransactionsView transactions={transactions} accounts={accounts} />
+            <TransactionsView transactions={transactions} accounts={accounts} baseCurrency={currencySettings.baseCurrency} locale={currencySettings.locale} />
 
             {/* Import preview — shown after selecting file in import modal */}
             {parsedCsv ? (
@@ -846,6 +863,8 @@ export default function Home() {
               transactions={transactions}
               activeAccountId={activeAccountFilter}
               onSelectAccount={setActiveAccountFilter}
+              baseCurrency={currencySettings.baseCurrency}
+              locale={currencySettings.locale}
             />
 
             {showAccountForm ? (
@@ -889,6 +908,17 @@ export default function Home() {
                     <AuthPanel user={user} profile={profile} onSignOut={() => {}} />
                   </div>
                 </div>
+              </div>
+            </details>
+
+            {/* Currency */}
+            <details className="settings-section">
+              <summary>Currency</summary>
+              <div className="settings-section-content">
+                <CurrencySettingsPanel
+                  settings={currencySettings}
+                  onChange={setCurrencySettings}
+                />
               </div>
             </details>
 
@@ -1033,6 +1063,7 @@ export default function Home() {
           accounts={accounts}
           transactions={transactions}
           learnings={categoryLearnings}
+          baseCurrency={currencySettings.baseCurrency}
           onImport={(txns, meta) => {
             setTransactions((prev) => [...txns, ...prev]);
             setImportMetadata((prev) => [meta, ...prev]);
@@ -1281,7 +1312,7 @@ function CsvImportPreview({
           <span>Warnings</span>
         </div>
         {rows.slice(0, 6).map((row) => (
-          <div className={hasError(row) ? "preview-row error" : row.duplicate ? "preview-row duplicate" : "preview-row"} key={row.rowNumber}>
+          <div className={row.warnings.some(w => w.level === "error") ? "preview-row error" : row.duplicate ? "preview-row duplicate" : "preview-row"} key={row.rowNumber}>
             <span>{row.rowNumber}</span>
             <span>{row.transaction?.date ?? "Invalid"}</span>
             <strong>{row.transaction?.description ?? row.raw[mapping.description ?? ""] ?? "Unmapped"}</strong>

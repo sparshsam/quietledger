@@ -1,4 +1,15 @@
-export type AccountKind = "cash" | "chequing" | "savings" | "credit-card" | "loan" | "investment" | "other" | "crypto" | "credit";
+// ─── Core Data Types ────────────────────────────────────────────────────────
+
+export type AccountKind =
+  | "cash"
+  | "chequing"
+  | "savings"
+  | "credit-card"
+  | "loan"
+  | "investment"
+  | "other"
+  | "crypto"
+  | "credit";
 
 export type Account = {
   id: string;
@@ -6,7 +17,7 @@ export type Account = {
   kind: AccountKind;
   subtitle: string;
   balance: number;
-  currency: "CAD";
+  currency: string; // was hardcoded "CAD" — now any ISO or crypto code, e.g. "USDC", "EUR", "BTC"
   archivedAt?: string;
 };
 
@@ -15,14 +26,28 @@ export type Transaction = {
   date: string;
   description: string;
   merchant?: string;
-  category: string;       // parent category, e.g. "Food"
-  subcategory?: string;   // child category, e.g. "Coffee"
+  category: string;
+  subcategory?: string;
   accountId: string;
-  amount: number;
+  amount: number; // amount in the account's currency (convenience)
+
+  // Multi-currency fields (v0.10.3)
+  originalAmount?: number; // amount as imported (before conversion)
+  originalCurrency?: string; // currency of the original import, e.g. "EUR"
+  convertedAmount?: number; // amount converted to account currency
+  exchangeRate?: number; // rate used: originalCurrency → account currency
+  exchangeRateDate?: string; // when the rate was fetched
+
   note?: string;
   source?: "demo" | "csv" | "manual";
   importId?: string;
+
+  // Transfer detection (v0.10.3)
+  isTransfer?: boolean;
+  pairedTransactionId?: string;
 };
+
+// ─── Import Types ───────────────────────────────────────────────────────────
 
 export type ImportMetadata = {
   id: string;
@@ -34,11 +59,109 @@ export type ImportMetadata = {
   warningCount: number;
 };
 
-export type LearnedCategory = {
-  pattern: string;       // normalized merchant name, e.g. "starbucks"
-  parent: string;        // e.g. "Food"
-  child: string;         // e.g. "Coffee"
+export type ImportSession = {
+  id: string;
+  fileName: string;
+  accountId: string;
+  currency: string;
+  importedAt: string;
+  transactionIds: string[];
+  rowCount: number;
+  acceptedCount: number;
+  duplicateCount: number;
+  warningCount: number;
+  mappingUsed?: Record<string, string>;
 };
+
+export type ImportPreviewRow = {
+  rowNumber: number;
+  raw: Record<string, string>;
+  transaction: Transaction | null;
+  warnings: ImportWarning[];
+  duplicate: boolean;
+  // Multi-currency preview fields (v0.10.3)
+  detectedCurrency?: string;
+  originalAmount?: number;
+  convertedAmount?: number;
+  conversionNote?: string;
+  isLikelyTransfer?: boolean;
+};
+
+export type ImportWarning = {
+  level: "warning" | "error";
+  message: string;
+};
+
+// ─── Currency Settings ──────────────────────────────────────────────────────
+
+export type CurrencySettings = {
+  baseCurrency: string; // USDC by default — display/conversion anchor
+  importCurrency: string; // default currency for imports with no currency column
+  locale: string; // number formatting locale, e.g. "en-US"
+};
+
+export const DEFAULT_CURRENCY_SETTINGS: CurrencySettings = {
+  baseCurrency: "USDC",
+  importCurrency: "USDC",
+  locale: "en-US",
+};
+
+// ─── Reconciliation Types (v0.10.6) ────────────────────────────────────────
+
+export type ReconciliationStatus = "open" | "in_progress" | "reconciled";
+
+export type BalanceAdjustment = {
+  id: string;
+  accountId: string;
+  date: string;
+  amount: number;
+  reason: string;
+  type: "correction" | "fee" | "interest" | "rounding" | "opening" | "closing";
+};
+
+export type Reconciliation = {
+  id: string;
+  accountId: string;
+  status: ReconciliationStatus;
+  openedAt: string;
+  completedAt?: string;
+  openingBalance: number;
+  closingBalance: number;
+  calculatedBalance: number;
+  difference: number;
+  transactionIds: string[];
+  statementBalance?: number;
+  statementDate?: string;
+  adjustments: BalanceAdjustment[];
+};
+
+// ─── Saved Search Types (v0.10.7) ──────────────────────────────────────────
+
+export type SavedSearch = {
+  id: string;
+  name: string;
+  query?: string;
+  category?: string;
+  accountId?: string;
+  merchant?: string;
+  currency?: string;
+  minAmount?: number;
+  maxAmount?: number;
+  dateFrom?: string;
+  dateTo?: string;
+  sortBy?: "date" | "amount" | "category" | "merchant";
+  sortDir?: "asc" | "desc";
+};
+
+// ─── Learned Categories ─────────────────────────────────────────────────────
+
+export type LearnedCategory = {
+  pattern: string;
+  parent: string;
+  child: string;
+};
+
+// ─── Patterns, Snapshots, and Insights ──────────────────────────────────────
 
 export type CategoryPattern = {
   id: string;
@@ -89,6 +212,8 @@ export type LifeCostEvent = {
   kind: "income" | "large-expense" | "recurring";
 };
 
+// ─── Budgets, Goals, Recurring ──────────────────────────────────────────────
+
 export type Budget = {
   id: string;
   category: string;
@@ -114,18 +239,21 @@ export type RecurringEntry = {
   category: string;
   accountId: string;
   frequency: RecurringFrequency;
-  intervalDays?: number; // for custom frequency
-  nextDate: string; // ISO date string
-  endDate?: string; // optional end date
+  intervalDays?: number;
+  nextDate: string;
+  endDate?: string;
   status: "active" | "paused" | "completed";
   note?: string;
   createdAt: string;
 };
 
+// ─── Ledger State ───────────────────────────────────────────────────────────
+
 export type LedgerData = {
   accounts: Account[];
   transactions: Transaction[];
   importMetadata?: ImportMetadata[];
+  importSessions: ImportSession[]; // v0.10.3 — import history for rollback
   patterns: CategoryPattern[];
   monthlySnapshots: MonthlySnapshot[];
   memories: FinancialMemory[];
@@ -137,7 +265,7 @@ export type LedgerData = {
 };
 
 export type PersistedLedgerState = {
-  schemaVersion: 1;
+  schemaVersion: 2; // bumped from 1 for currency support
   savedAt: string;
   accounts: Account[];
   transactions: Transaction[];
@@ -145,6 +273,7 @@ export type PersistedLedgerState = {
   memories: FinancialMemory[];
   forecastItems: ForecastItem[];
   importMetadata: ImportMetadata[];
+  importSessions: ImportSession[];
   budgets: Budget[];
   goals: Goal[];
   recurringEntries: RecurringEntry[];

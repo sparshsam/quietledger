@@ -16,8 +16,8 @@ import { ComparisonPills } from "@/components/comparison-pills";
 import { AllMonthsBarChart } from "@/components/all-months-chart";
 import type { ComparisonRange } from "@/lib/finance/comparisons";
 import { computeExpenseComparison } from "@/lib/finance/comparisons";
-
-const currency = new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" });
+import { formatCurrency } from "@/lib/finance/currency";
+import { DEFAULT_CURRENCY_SETTINGS } from "@/lib/data/types";
 
 type LedgerReportProps = {
   transactions: Transaction[];
@@ -29,6 +29,8 @@ type LedgerReportProps = {
   activeCategory: string | null;
   activeAccountId: string | null;
   onCategoryFilter: (category: string | null) => void;
+  baseCurrency?: string;
+  locale?: string;
 };
 
 export function LedgerReport({
@@ -41,10 +43,11 @@ export function LedgerReport({
   activeCategory,
   activeAccountId,
   onCategoryFilter,
+  baseCurrency = DEFAULT_CURRENCY_SETTINGS.baseCurrency,
+  locale = DEFAULT_CURRENCY_SETTINGS.locale,
 }: LedgerReportProps) {
   const [comparisonRange, setComparisonRange] = useState<ComparisonRange>("last_month");
 
-  // Filter by month AND account
   const filteredTxns = useMemo(() => {
     let txns = transactions;
     if (activeAccountId) txns = txns.filter((t) => t.accountId === activeAccountId);
@@ -76,10 +79,14 @@ export function LedgerReport({
 
   const netWorth = computeEffectiveNetWorth(accounts, monthlyTxns);
 
-  const monthLabel = new Date(`${month}-01T12:00:00`).toLocaleString("en-CA", {
+  const monthLabel = new Date(`${month}-01T12:00:00`).toLocaleString(locale, {
     month: "long",
     year: "numeric",
   });
+
+  function fmt(amount: number) {
+    return formatCurrency(amount, baseCurrency, locale);
+  }
 
   return (
     <>
@@ -99,11 +106,11 @@ export function LedgerReport({
         )}
       </div>
 
-      {/* Summary Strip — numbers first, net worth prominent */}
+      {/* Summary Strip */}
       <div className="month-summary">
         <div className="month-summary-item">
           <span className="month-summary-value positive">
-            {currency.format(income)}
+            {fmt(income)}
           </span>
           <span className="month-summary-label text-xs font-bold tracking-wider uppercase">
             Income
@@ -111,7 +118,7 @@ export function LedgerReport({
         </div>
         <div className="month-summary-item">
           <span className="month-summary-value negative">
-            {currency.format(expenses)}
+            {fmt(expenses)}
           </span>
           <span className="month-summary-label text-xs font-bold tracking-wider uppercase">
             Spent
@@ -124,7 +131,7 @@ export function LedgerReport({
               (remaining >= 0 ? "positive" : "negative")
             }
           >
-            {currency.format(remaining)}
+            {fmt(remaining)}
           </span>
           <span className="month-summary-label text-xs font-bold tracking-wider uppercase">
             Remaining
@@ -137,7 +144,7 @@ export function LedgerReport({
               (netWorth >= 0 ? "positive" : "negative")
             }
           >
-            {currency.format(netWorth)}
+            {fmt(netWorth)}
           </span>
           <span className="month-summary-label text-xs font-bold tracking-wider uppercase">
             Net worth
@@ -154,14 +161,14 @@ export function LedgerReport({
               {comparisonResult.direction === "up" ? "▲" : "▼"}
             </span>
             {" "}
-            {currency.format(Math.abs(comparisonResult.absChange))} (
+            {fmt(Math.abs(comparisonResult.absChange))} (
             {Math.abs(comparisonResult.pctChange ?? 0)}%){" "}
             {comparisonResult.label}
           </p>
         )}
       </div>
 
-      {/* Where Did My Money Go? — signature section */}
+      {/* Where Did My Money Go? */}
       <section className="report-section">
         <h2 className="section-title">Where did my money go?</h2>
         <div className="category-breakdown">
@@ -189,7 +196,7 @@ export function LedgerReport({
               >
                 <span className="category-row-name">{category}</span>
                 <span className="category-row-amount">
-                  {currency.format(spent)}
+                  {fmt(spent)}
                 </span>
               </button>
             ))
@@ -232,7 +239,7 @@ export function LedgerReport({
                     />
                   </div>
                   <span className={remainingAmt >= 0 ? "" : "negative"}>
-                    {currency.format(remainingAmt)}
+                    {fmt(remainingAmt)}
                   </span>
                 </div>
               );
@@ -240,7 +247,7 @@ export function LedgerReport({
         </section>
       )}
 
-      {/* Account breakdown — previously part of net worth section */}
+      {/* Account breakdown */}
       {visibleAccounts.length > 1 && (
         <section className="report-section" style={{ paddingTop: 0 }}>
           <div className="net-worth-accounts">
@@ -248,14 +255,19 @@ export function LedgerReport({
               const balance = accountEffectiveBalance(a, monthlyTxns);
               return (
                 <div key={a.id} className="net-worth-account-row">
-                  <span className="net-worth-account-name">{a.name}</span>
+                  <span className="net-worth-account-name">
+                    {a.name}
+                    {a.currency && a.currency !== baseCurrency && (
+                      <span className="net-worth-account-currency"> {a.currency}</span>
+                    )}
+                  </span>
                   <span
                     className={
                       "net-worth-account-balance " +
                       (balance >= 0 ? "positive" : "negative")
                     }
                   >
-                    {currency.format(balance)}
+                    {fmt(balance)}
                   </span>
                 </div>
               );

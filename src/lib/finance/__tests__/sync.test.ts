@@ -344,6 +344,7 @@ describe("verifyRestore", () => {
       lifeCostEvents: [],
       budgets: [],
       goals: [],
+      importSessions: [],
     };
     const backupData = {
       accounts: [],
@@ -367,6 +368,7 @@ describe("verifyRestore", () => {
       lifeCostEvents: [],
       budgets: [],
       goals: [],
+      importSessions: [],
     };
     const backupData = {
       accounts: [],

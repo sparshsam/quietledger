@@ -8,7 +8,7 @@ import type { LedgerData } from "./types";
  */
 export const ledgerData: LedgerData = {
   accounts: [
-    { id: "default", name: "My Account", kind: "chequing", subtitle: "Your ledger", balance: 0, currency: "CAD" },
+    { id: "default", name: "My Account", kind: "chequing", subtitle: "Your ledger", balance: 0, currency: "USDC" },
   ],
   transactions: [],
   patterns: [],
@@ -19,4 +19,6 @@ export const ledgerData: LedgerData = {
   budgets: [],
   goals: [],
   recurringEntries: [],
+  importMetadata: [],
+  importSessions: [],
 };

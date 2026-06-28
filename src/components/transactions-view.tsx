@@ -6,11 +6,8 @@ import type { Account, Transaction } from "@/lib/data/types";
 import { NoTransactions } from "./empty-states";
 import { Select } from "@/components/select";
 import { DatePicker } from "@/components/date-picker";
-
-const currency = new Intl.NumberFormat("en-CA", {
-  style: "currency",
-  currency: "CAD",
-});
+import { formatCurrency } from "@/lib/finance/currency";
+import { DEFAULT_CURRENCY_SETTINGS } from "@/lib/data/types";
 
 type SortKey = "date" | "amount" | "category" | "account";
 
@@ -57,9 +54,13 @@ function formatDate(value: string) {
 export function TransactionsView({
   transactions,
   accounts,
+  baseCurrency = DEFAULT_CURRENCY_SETTINGS.baseCurrency,
+  locale = DEFAULT_CURRENCY_SETTINGS.locale,
 }: {
   transactions: Transaction[];
   accounts: Account[];
+  baseCurrency?: string;
+  locale?: string;
 }) {
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
@@ -217,7 +218,10 @@ export function TransactionsView({
                   <span className="account-kind-badge badge-misc" style={{ opacity: 0.4 }}>—</span>
                 )}
               </span>
-              <em className={t.amount < 0 ? "negative" : "positive"}>{currency.format(t.amount)}</em>
+              <em className={t.amount < 0 ? "negative" : "positive"}>{formatCurrency(t.amount, baseCurrency, locale)}</em>
+              {t.originalCurrency && t.originalCurrency !== baseCurrency && (
+                <span className="tx-currency-badge">{t.originalCurrency}</span>
+              )}
             </div>
           ))}
         </div>

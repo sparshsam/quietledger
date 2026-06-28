@@ -2,8 +2,8 @@
 
 import type { Account, Transaction } from "@/lib/data/types";
 import { accountEffectiveBalance } from "@/lib/finance/totals";
-
-const currency = new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" });
+import { formatCurrency, getCurrency } from "@/lib/finance/currency";
+import { DEFAULT_CURRENCY_SETTINGS } from "@/lib/data/types";
 
 const kindLabels: Record<string, string> = {
   chequing: "Checking",
@@ -28,7 +28,6 @@ const kindBadgeClass: Record<string, string> = {
   other: "badge-misc",
 };
 
-/** Returns true if this account type normally carries a liability balance. */
 function isLiability(kind: string): boolean {
   return kind === "credit-card" || kind === "credit" || kind === "loan";
 }
@@ -38,16 +37,28 @@ type AccountsViewProps = {
   transactions: Transaction[];
   activeAccountId: string | null;
   onSelectAccount: (id: string | null) => void;
+  baseCurrency?: string;
+  locale?: string;
 };
 
-export function AccountsView({ accounts, transactions, activeAccountId, onSelectAccount }: AccountsViewProps) {
+export function AccountsView({
+  accounts,
+  transactions,
+  activeAccountId,
+  onSelectAccount,
+  baseCurrency = DEFAULT_CURRENCY_SETTINGS.baseCurrency,
+  locale = DEFAULT_CURRENCY_SETTINGS.locale,
+}: AccountsViewProps) {
   const active = accounts.filter((a) => !a.archivedAt);
   const totalNet = active.reduce((s, a) => s + accountEffectiveBalance(a, transactions), 0);
+
+  function fmt(amount: number, currency?: string) {
+    return formatCurrency(amount, currency ?? baseCurrency, locale);
+  }
 
   return (
     <div>
       <div className="accounts-list">
-        {/* "All accounts" summary card */}
         <button
           className={"account-card" + (activeAccountId === null ? " active" : "")}
           onClick={() => onSelectAccount(null)}
@@ -57,7 +68,7 @@ export function AccountsView({ accounts, transactions, activeAccountId, onSelect
             <span className="account-card-sub">{active.length} account{active.length !== 1 ? "s" : ""}</span>
           </div>
           <span className={"account-card-balance " + (totalNet >= 0 ? "positive" : "negative")}>
-            {currency.format(totalNet)}
+            {fmt(totalNet)}
           </span>
         </button>
 
@@ -69,10 +80,6 @@ export function AccountsView({ accounts, transactions, activeAccountId, onSelect
 
         {active.map((a) => {
           const balance = accountEffectiveBalance(a, transactions);
-          // For liability accounts (credit cards, loans) the "normal" state is
-          // a negative balance (you owe money). We still apply the CSS class
-          // directly so negative = red, positive = green, but the meaning
-          // is context-aware: a credit card with -$500 is "normal" debt.
           return (
             <button
               key={a.id}
@@ -80,13 +87,18 @@ export function AccountsView({ accounts, transactions, activeAccountId, onSelect
               onClick={() => onSelectAccount(activeAccountId === a.id ? null : a.id)}
             >
               <div className="account-card-info">
-                <span className="account-card-name">{a.name}</span>
+                <span className="account-card-name">
+                  {a.name}
+                  {a.currency && a.currency !== baseCurrency && (
+                    <span className="account-currency-badge">{a.currency}</span>
+                  )}
+                </span>
                 <span className={`account-kind-badge ${kindBadgeClass[normalizeKind(a.kind)] ?? "badge-misc"}`}>
                   {kindLabels[normalizeKind(a.kind)] ?? a.subtitle}
                 </span>
               </div>
               <span className={"account-card-balance " + (balance >= 0 ? "positive" : "negative")}>
-                {currency.format(balance)}
+                {fmt(balance, a.currency || baseCurrency)}
               </span>
             </button>
           );
