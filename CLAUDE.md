@@ -5,11 +5,12 @@
 OpenLedger is a private, local-first finance tool for everyday budgeting and records.
 Built with Next.js + TypeScript. Formerly QuietLedger.
 
-**Current Release:** v0.10.5 (2026-06-27)
+**Current Release:** v0.10.6 (2026-06-27)
 **Live domain:** https://ledger.kovina.org
-**Deploy status:** Production — PR #3 merged.
+**Deploy status:** Production — PR #4 merged.
 
 Releases:
+           v0.10.6 — Accounts & Reconciliation (reconciliation workflow, opening/closing balances, balance adjustments, statement reconciliation, account health scoring, filtered views)
            v0.10.5 — Budgets That Learn (automatic recommendations, rolling averages, budget health, forecasting, category rollover, history, adjustment suggestions)
            v0.10.4 — Financial Insights (report modes, spending trends, category growth/decline, merchant summaries, cashflow timeline, savings rate, income consistency)
            v0.10.3 — Import Intelligence & Global Currency Foundation (multi-currency, exchange rates, international CSV, bank format registry, USDC default, Settings currency picker)
@@ -34,7 +35,7 @@ Releases:
 - **Deployment:** Vercel → https://ledger.kovina.org
 - **GitHub:** https://github.com/sparshsam/openledger
 
-## Status — v0.10.5 (Budgets That Learn)
+## Status — v0.10.6 (Accounts & Reconciliation)
 
 ### Auth — Complete Rebuild (June 27)
 The Google OAuth auth flow was completely rebuilt after root cause analysis revealed a Supabase **project mismatch**: the auth cookie was being set for OpenSprout's project (`rbdyrymtgfqqkdemicdo`) instead of OpenLedger's (`qoxmibmbyjmkntzrckyr`). This happened because `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` was missing from Vercel env (so the server callback silently failed), AND stale OpenSprout cookies on localhost were being read as valid sessions.
