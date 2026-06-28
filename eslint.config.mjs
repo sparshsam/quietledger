@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Electron is a separate Node.js project using require()
+    "electron/**",
   ]),
 ]);
 
