@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePlatform } from "@/lib/native/use-platform";
 
 interface CapacitorInfo {
@@ -20,6 +20,7 @@ export function DiagnosticsPanel() {
     const params = new URLSearchParams(window.location.search);
     return platform.isNative || params.has("diagnostics");
   });
+  const [sessionStatus, setSessionStatus] = useState<string>("Checking...");
   const [capacitorInfo] = useState<CapacitorInfo | null>(() => {
     const cap = (window as unknown as Record<string, unknown>).Capacitor as
       | { getPlatform: () => string; isNativePlatform?: () => boolean; Plugins?: Record<string, unknown> }
@@ -31,6 +32,20 @@ export function DiagnosticsPanel() {
       plugins: Object.keys(cap.Plugins ?? {}),
     };
   });
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { createClient } = await import("@supabase/supabase-js");
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+        if (!url || !key) { setSessionStatus("No Supabase credentials"); return; }
+        const supabase = createClient(url, key);
+        const { data } = await supabase.auth.getSession();
+        setSessionStatus(data.session ? `Signed in (${data.session.user.email ?? "unknown"})` : "Guest");
+      } catch { setSessionStatus("Error checking session"); }
+    })();
+  }, []);
 
   if (!show) return null;
 
@@ -64,6 +79,9 @@ export function DiagnosticsPanel() {
 
               <span style={{ color: "var(--text-tertiary)" }}>Capacitor:</span>
               <span>{capacitorInfo ? JSON.stringify(capacitorInfo) : "Not detected"}</span>
+
+              <span style={{ color: "var(--text-tertiary)" }}>Supabase:</span>
+              <span>{sessionStatus}</span>
             </div>
           </div>
         </div>
