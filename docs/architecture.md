@@ -1,18 +1,41 @@
 # OpenLedger Architecture
 
-> **Last updated:** v0.9.11 (2026-06-25)
+> **Last updated:** v0.11.0 (2026-06-28)
 
 ## Overview
 
-OpenLedger is a **local-first** single-page application. The entire ledger runs in the browser with `localStorage` persistence. Cloud sync via Supabase is optional and opt-in.
+OpenLedger is a **local-first** single-page application. The entire ledger runs in the browser with **IndexedDB** as the primary data store and **localStorage** as a fallback. Cloud sync via Supabase is optional and opt-in.
 
 ```
 Browser (Next.js SPA)
-  ├── localStorage — primary data store
+  ├── IndexedDB — primary data store (with localStorage fallback)
+  ├── localStorage — secondary store (learnings, rules, aliases, settings)
+  ├── Service Worker — offline cache, PWA shell
   ├── Supabase Auth — optional Google sign-in
   ├── Supabase Postgres — optional cloud backup
   └── Supabase Storage — optional receipt photos
 ```
+
+## Storage Layer
+
+The storage layer (`src/lib/data/storage.ts`) provides an async key-value store backed by IndexedDB with automatic localStorage fallback:
+
+- **IndexedDB** (`openledger` database, `ledger` object store): Stores the primary ledger state. No practical size limit. Async operations avoid blocking the main thread.
+- **localStorage fallback**: Used when IndexedDB is unavailable (private browsing in some browsers). Same data shape, synchronous.
+- **Migration**: On first load, data is migrated from localStorage to IndexedDB. Both stores are kept in sync during the transition.
+- **Crash recovery**: Each save writes an atomic savepoint before updating the main key. If the write is interrupted, the savepoint is recovered on next load.
+
+### Storage Keys
+
+| Key | Store | Purpose |
+|-----|-------|---------|
+| `openledger.localLedger.v2` | IndexedDB + localStorage | Primary ledger data (v3 schema) |
+| `openledger.localLedger.savepoint` | localStorage | Crash recovery savepoint |
+| `openledger.currencySettings` | localStorage | Currency preferences |
+| `openledger.importSessions` | localStorage | CSV import session history |
+| `openledger_category_learnings` | localStorage | Learned category mappings |
+| `openledger_categorization_rules` | localStorage | User-defined rules |
+| `openledger_merchant_aliases` | localStorage | Merchant name aliases |
 
 ## App Structure
 

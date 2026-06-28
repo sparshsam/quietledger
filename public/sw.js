@@ -7,19 +7,24 @@
 // The VERSION constant is bumped with each deploy so the browser detects the SW
 // changed and downloads the new version immediately.
 
-const CACHE_NAME = "openledger-shell-v7";
+const CACHE_NAME = "openledger-shell-v8";
 const SHELL_ASSETS = ["/", "/manifest.webmanifest", "/icons/icon.svg"];
 
 // Bump this with every deploy that includes SW changes so the browser
 // detects the updated script and activates the new SW.
-// (The browser also checks for SW updates every 24h, but explicit changes
-//  ensure near-immediate detection.)
-const VERSION = "2026-06-26";
+const VERSION = "2026-06-28";
+
+// ── Message Handler ─────────────────────────────────────────────────────────
+// Handles SKIP_WAITING from the PwaRegister component so the user's "Reload"
+// button can activate the new SW immediately.
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
 
 // ── Install ──────────────────────────────────────────────────────────────
 // Cache shell assets and take control immediately — no waiting state.
-// If an asset fails to cache (e.g., offline install), the app still works
-// fine for online visits via the network-first navigation handler below.
 self.addEventListener("install", (event) => {
   self.skipWaiting();
 
@@ -30,9 +35,7 @@ self.addEventListener("install", (event) => {
           fetch(url)
             .then((response) => {
               if (!response.ok)
-                throw new Error(
-                  `Failed to cache ${url}: ${response.status}`,
-                );
+                throw new Error(`Failed to cache ${url}: ${response.status}`);
               return cache.put(url, response);
             })
             .catch(() => {
@@ -58,10 +61,7 @@ self.addEventListener("activate", (event) => {
           .map((key) => caches.delete(key)),
       );
 
-      // Proactively refresh shell assets from network (silently — don't
-      // block activation on this, but don't lose it if it fails either).
-      // This ensures the cache always has the latest version of shell assets
-      // even if the SW version string hasn't changed.
+      // Proactively refresh shell assets from network
       caches
         .open(CACHE_NAME)
         .then((cache) =>
@@ -94,8 +94,6 @@ self.addEventListener("fetch", (event) => {
   }
 
   // For Google avatar/profile images: network-only, never cache
-  // (SW fetch() triggers connect-src CSP; cache-first for these
-  //  would also violate CSP since the SW connects out to fetch.)
   const url = new URL(event.request.url);
   if (url.hostname === "lh3.googleusercontent.com") {
     return;
@@ -113,21 +111,19 @@ self.addEventListener("fetch", (event) => {
 async function networkFirst(request) {
   try {
     const response = await fetch(request);
-    // Cache a copy for offline fallback
     const copy = response.clone();
     const cache = await caches.open(CACHE_NAME);
     cache.put(request, copy);
     return response;
   } catch {
     const cached = await caches.match(request);
-    return cached ?? new Response("Offline", { status: 503 });
+    return cached ?? new Response("Offline — OpenLedger", { status: 503 });
   }
 }
 
 /**
  * Cache-first strategy for static assets.
  * Returns from cache instantly, falling back to network if not cached.
- * Newly-fetched assets are added to the cache for next time.
  */
 async function cacheFirst(request) {
   const cached = await caches.match(request);

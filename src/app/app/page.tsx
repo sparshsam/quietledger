@@ -26,6 +26,7 @@ import {
   Upload,
   WalletCards,
   AlertTriangle,
+  WifiOff,
 } from "lucide-react";
 import Link from "next/link";
 import type { ChangeEvent } from "react";
@@ -47,8 +48,10 @@ import { downloadLedgerExport } from "@/lib/data/export";
 import {
   clearLedgerState,
   createDemoLedgerState,
+  hasSavepoint,
   loadLedgerState,
   normalizeLedgerBackup,
+  recoverFromSavepoint,
   saveLedgerState,
 } from "@/lib/data/persistence";
 import { ledgerData } from "@/lib/data/seed";
@@ -56,27 +59,33 @@ import { createScreenshotLedgerData } from "@/lib/data/screenshot-seed";
 import type { Account, AccountKind, Budget, CategorizationRule, Goal, ImportMetadata, ImportSession, LearnedCategory, MerchantAlias, RecurringEntry, Transaction } from "@/lib/data/types";
 import type { CurrencySettings } from "@/lib/data/types";
 import { DEFAULT_CURRENCY_SETTINGS } from "@/lib/data/types";
+import dynamicImport from "next/dynamic";
 import { PwaRegister } from "@/components/pwa-register";
-import { TransactionsView } from "@/components/transactions-view";
-import { SearchView } from "@/components/search-view";
-import { QuickJump } from "@/components/quick-jump";
+import { PwaInstall } from "@/components/pwa-install";
+import { useOnlineStatus } from "@/lib/hooks/useOnlineStatus";
 import { GuestModeGuidance, CloudBackupGuidance } from "@/components/empty-states";
-import { BudgetsPanel } from "@/components/budgets-panel";
-import { GoalsPanel } from "@/components/goals-panel";
-import { RecurringPanel } from "@/components/recurring-panel";
 import { ReceiptGallery } from "@/components/receipt-gallery";
 import { DataManagementPanel } from "@/components/data-management-panel";
 import { AutomationPanel } from "@/components/automation/automation-panel";
 import { McpTokensPanel } from "@/components/mcp-tokens-panel";
 import { ErrorBoundary } from "@/components/error-boundary";
 
-import { LedgerReport } from "@/components/ledger-report";
 import { ReportsView } from "@/components/reports-view";
-import { ImportFlow } from "@/components/import-flow";
-import { AccountsView } from "@/components/accounts-view";
+import { AutomationPanel } from "@/components/automation/automation-panel";
 import { Select } from "@/components/select";
 import { DatePicker } from "@/components/date-picker";
 import { CurrencySettingsPanel } from "@/components/currency-settings-panel";
+
+// Code-split heavy tab components — loaded on first visit
+const LedgerReport = dynamicImport(() => import("@/components/ledger-report").then((m) => ({ default: m.LedgerReport })), { ssr: false });
+const TransactionsView = dynamicImport(() => import("@/components/transactions-view").then((m) => ({ default: m.TransactionsView })), { ssr: false });
+const SearchView = dynamicImport(() => import("@/components/search-view").then((m) => ({ default: m.SearchView })), { ssr: false });
+const QuickJump = dynamicImport(() => import("@/components/quick-jump").then((m) => ({ default: m.QuickJump })), { ssr: false });
+const ImportFlow = dynamicImport(() => import("@/components/import-flow").then((m) => ({ default: m.ImportFlow })), { ssr: false });
+const AccountsView = dynamicImport(() => import("@/components/accounts-view").then((m) => ({ default: m.AccountsView })), { ssr: false });
+const BudgetsPanel = dynamicImport(() => import("@/components/budgets-panel").then((m) => ({ default: m.BudgetsPanel })), { ssr: false });
+const GoalsPanel = dynamicImport(() => import("@/components/goals-panel").then((m) => ({ default: m.GoalsPanel })), { ssr: false });
+const RecurringPanel = dynamicImport(() => import("@/components/recurring-panel").then((m) => ({ default: m.RecurringPanel })), { ssr: false });
 import { recordCategoryLearning, loadCategoryLearnings, loadCurrencySettings, saveCurrencySettings, loadCategorizationRules, saveCategorizationRules, loadMerchantAliases, saveMerchantAliases } from "@/lib/data/persistence";
 
 const currency = new Intl.NumberFormat("en-CA", {
@@ -194,8 +203,12 @@ export default function Home() {
   const [activeAccountFilter, setActiveAccountFilter] = useState<string | null>(null);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string | null>(null);
   const [categoryLearnings, setCategoryLearnings] = useState<LearnedCategory[]>([]);
+<<<<<<< HEAD
   const [rules, setRules] = useState<CategorizationRule[]>([]);
   const [aliases, setAliases] = useState<MerchantAlias[]>([]);
+=======
+  const isOnline = useOnlineStatus();
+>>>>>>> c61299d (release: v0.11.0 — Platform Readiness)
   const [importCreateMode, setImportCreateMode] = useState(false);
   const [importCreateModeName, setImportCreateModeName] = useState("");
   const [importCreateModeKind, setImportCreateModeKind] = useState<AccountKind>("chequing");
@@ -332,7 +345,13 @@ export default function Home() {
       return;
     }
 
-    const result = loadLedgerState(window.localStorage);
+    // Check for crash savepoint before normal load
+    let result;
+    if (hasSavepoint(window.localStorage)) {
+      result = recoverFromSavepoint(window.localStorage);
+    } else {
+      result = loadLedgerState(window.localStorage);
+    }
     setTimeout(() => {
       applyLedgerState(result.state);
       setLastSavedAt(result.state.savedAt);
@@ -740,6 +759,22 @@ export default function Home() {
       <a href="#main" className="skip-link">Skip to main content</a>
       <PwaRegister />
 
+      {/* Offline indicator */}
+      {!isOnline && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 250,
+          background: "var(--warning)", color: "#1A1612",
+          padding: "8px 16px", fontSize: 13, fontWeight: 600,
+          textAlign: "center", display: "flex", alignItems: "center",
+          justifyContent: "center", gap: 8,
+        }}>
+          <WifiOff size={14} />
+          You are offline. Changes will be saved locally and synced when you reconnect.
+        </div>
+      )}
+
+
+
       {/* Top navigation */}
       <nav className="navbar" aria-label="Navigation">
         <Link href="/" className="navbar-brand" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'inherit' }}>
@@ -759,6 +794,7 @@ export default function Home() {
           ))}
         </div>
         <div className="navbar-actions">
+          <PwaInstall />
           <button
             className="navbar-search-btn"
             onClick={() => setShowSearch(true)}

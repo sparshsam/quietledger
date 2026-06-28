@@ -2,6 +2,79 @@
 
 All notable changes to OpenLedger will be documented here.
 
+## 0.11.0 — 2026-06-28
+
+- **IndexedDB storage engine.** New async storage layer with automatic localStorage fallback. Better performance, no 5MB limit, transactional writes. Migration on first load.
+- **Offline detection.** `useOnlineStatus` hook + fixed offline banner with auto-dismiss on reconnect.
+- **PWA install prompt.** `beforeinstallprompt` handling + iOS Safari install instructions.
+- **Update flow.** SW message handler for `SKIP_WAITING`, dismiss option on update banner.
+- **Code splitting.** All tab components loaded via `next/dynamic` — smaller initial bundle, lazy loading.
+- **Crash recovery.** Atomic savepoint writes — if a save is interrupted, data is recovered on next load.
+- **Security headers.** Added `Cross-Origin-Opener-Policy` and `Cross-Origin-Resource-Policy`.
+- **Accessibility.** Enhanced error boundary with retry, `role="alert"` on error states, better reduced-motion support.
+- **Documentation refresh.** Updated CHANGELOG, ARCHITECTURE, and CLAUDE.md.
+- **Storage diagnostics.** `getStorageDiagnostics()` utility for monitoring storage health and usage.
+
+## 0.10.9 — 2026-06-27
+
+- **Categorization rules engine.** Condition-based rules (contains/equals/gt/lt on description/merchant/amount).
+- **Rules manager UI.** CRUD, priority ordering, enable/disable, match count.
+- **Merchant aliases.** Normalize merchant names with optional auto-category. Merge suggestions.
+- **Improved recurring detection.** Date-interval analysis with confidence scoring.
+- **Auto-tagging.** Automatic tags for large/essential/discretionary/income transactions.
+- **Background cleanup.** Auto-categorize uncategorized transactions, suggest alias merges.
+- **28 new tests** for the rule engine and detection.
+
+## 0.10.8 — 2026-06-27
+
+- **Reports tab.** Annual financial summary, category reports, merchant reports, cashflow reports.
+- **Print support.** `@media print` CSS rules, print button on Ledger and all reports (PDF via browser).
+- **Enhanced v3 backup.** All data types included in export (budgets, goals, recurring, learnings, etc.).
+- **Filtered CSV export.** Filter by date, account, category, merchant, type. Subcategory and currency columns.
+- **Report sharing.** Copy summary to clipboard, export report as CSV.
+- **46 new tests** covering all report helpers and rule engine.
+
+## 0.10.7 — 2026-06-27
+
+- **Search engine.** Full-text search across descriptions, merchants, categories, notes, amounts. Advanced filters (date range, account, category, amount), saved searches, timeline navigation.
+- **Merchant profiles.** Aggregated merchant view with total spent, transaction count, category breakdown, monthly trend.
+- **Monthly highlights.** Top category, largest transaction, month-over-month changes, spending patterns.
+- **Year summaries.** Annual aggregate view with month-by-month breakdown.
+- **Search view overlay.** Fullscreen modal with keyboard navigation, quick filters, saved filters bar.
+
+## 0.10.6 — 2026-06-26
+
+- **Reconciliation workflow.** Full reconciliation system with open/in_progress/reconciled statuses.
+- **Balance adjustments.** Correction, fee, interest, rounding, opening, and closing adjustment types.
+- **Statement reconciliation.** Compare calculated balance against statement balance, reconcile differences.
+- **Account health scoring.** A_ * B * C scoring: account age, transaction consistency, reconciliation history, balance trend, diversification.
+- **Reconciliation persistence.** All reconciliation state saved to localStorage and included in backups.
+
+## 0.10.5 — 2026-06-25
+
+- **Budget learning.** Automatic budget recommendations based on spending history. Rolling average calculations.
+- **Budget health scoring.** Track budget performance with health indicators (on-track/warning/over).
+- **Forecasting.** Project future spending based on historical trends and recurring entries.
+- **Category rollover.** Unused budget amounts roll over to the next month.
+- **Adjustment suggestions.** Intelligent suggestions for budget adjustments based on spending patterns.
+
+## 0.10.4 — 2026-06-24
+
+- **Financial insights engine.** Spending trends, category growth/decline analysis, merchant summaries.
+- **Cashflow timeline.** Monthly income vs expenses visualization.
+- **Savings rate calculation.** Automatic savings rate tracking with month-over-month comparison.
+- **Income consistency metrics.** Track and analyze income patterns over time.
+- **Report modes.** Multiple report view modes for different analysis perspectives.
+
+## 0.10.3 — 2026-06-23
+
+- **Multi-currency foundation.** Full multi-currency support with exchange rate system.
+- **International CSV import.** Bank format registry supporting 18+ international bank formats.
+- **USDC default.** Changed base currency from CAD to USDC.
+- **Currency settings.** Base currency, import currency, and locale picker in Settings.
+- **Exchange rate engine.** Fetch and cache exchange rates for currency conversion.
+- **Transfer detection.** Automatic transfer detection for multi-account transactions.
+
 ## 0.10.2 — 2026-06-27
 
 - **Auth rebuild.** Complete rewrite matching OpenSprout's working pattern. Root cause: Supabase project mismatch — auth cookie was set for OpenSprout's project (`rbdyrymtgfqqkdemicdo`) instead of OpenLedger's (`qoxmibmbyjmkntzrckyr`). Missing `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` on Vercel caused silent PKCE exchange failure. Stale OpenSprout cookies on localhost (same domain) polluted session state.

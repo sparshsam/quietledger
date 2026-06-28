@@ -6,6 +6,7 @@ const UPDATE_CHECK_INTERVAL = 60_000; // 60 seconds
 
 export function PwaRegister() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
@@ -43,7 +44,7 @@ export function PwaRegister() {
         try {
           await registrationRef.current.update();
         } catch {
-          // Update check failed silently — next interval will retry
+          // Update check failed silently
         }
       }
     }, UPDATE_CHECK_INTERVAL);
@@ -53,6 +54,7 @@ export function PwaRegister() {
 
   const applyUpdate = () => {
     setUpdateAvailable(false);
+    setDismissed(false);
     navigator.serviceWorker.ready.then((registration) => {
       registration.waiting?.postMessage({ type: "SKIP_WAITING" });
     });
@@ -62,13 +64,21 @@ export function PwaRegister() {
     });
   };
 
+  const dismissUpdate = () => {
+    setUpdateAvailable(false);
+    setDismissed(true);
+  };
+
   return (
     <>
-      {updateAvailable ? (
+      {updateAvailable && !dismissed ? (
         <div className="sw-update-banner">
-          <span>A new version is available.</span>
+          <span>A new version of OpenLedger is available.</span>
           <button onClick={applyUpdate} className="sw-update-btn">
             Reload
+          </button>
+          <button onClick={dismissUpdate} className="sw-update-btn" style={{ background: "transparent", opacity: 0.7 }}>
+            Later
           </button>
         </div>
       ) : null}

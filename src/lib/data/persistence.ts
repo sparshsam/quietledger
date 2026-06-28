@@ -12,6 +12,7 @@ import { DEFAULT_BASE_CURRENCY } from "@/lib/finance/currency";
 
 export const LEDGER_STORAGE_KEY = "openledger.localLedger.v2";
 export const LEDGER_SCHEMA_VERSION = 3;
+export const SAVEPOINT_KEY = "openledger.localLedger.savepoint";
 
 export const CURRENCY_SETTINGS_KEY = "openledger.currencySettings";
 export const IMPORT_SESSIONS_KEY = "openledger.importSessions";
@@ -94,6 +95,76 @@ export function saveLedgerState(storage: Storage, state: Omit<PersistedLedgerSta
   };
   storage.setItem(LEDGER_STORAGE_KEY, JSON.stringify(nextState));
   return nextState;
+}
+
+// ─── Crash Recovery (savepoint) ───────────────────────────────────────────
+
+/**
+ * Atomic save: write to savepoint first, then to main key.
+ * If the main write fails, the savepoint can be recovered.
+ */
+export function saveLedgerStateAtomic(
+  storage: Storage,
+  state: Omit<PersistedLedgerState, "schemaVersion" | "savedAt">,
+): PersistedLedgerState {
+  const nextState: PersistedLedgerState = {
+    schemaVersion: LEDGER_SCHEMA_VERSION,
+    savedAt: new Date().toISOString(),
+    ...state,
+    accounts: state.accounts,
+    transactions: state.transactions,
+    monthlySnapshots: state.monthlySnapshots,
+    memories: state.memories,
+    forecastItems: state.forecastItems,
+    importMetadata: state.importMetadata ?? [],
+    importSessions: state.importSessions ?? [],
+    budgets: state.budgets ?? [],
+    goals: state.goals ?? [],
+    recurringEntries: state.recurringEntries ?? [],
+  };
+
+  // Write savepoint first, then main key
+  storage.setItem(SAVEPOINT_KEY, JSON.stringify(nextState));
+  storage.setItem(LEDGER_STORAGE_KEY, JSON.stringify(nextState));
+  // Clean up savepoint on success
+  storage.removeItem(SAVEPOINT_KEY);
+
+  return nextState;
+}
+
+/**
+ * Check if a savepoint exists (indicating a crash during save).
+ */
+export function hasSavepoint(storage: Storage): boolean {
+  return storage.getItem(SAVEPOINT_KEY) !== null;
+}
+
+/**
+ * Recover from a savepoint.
+ */
+export function recoverFromSavepoint(storage: Storage): LoadLedgerResult {
+  const raw = storage.getItem(SAVEPOINT_KEY);
+  if (!raw) {
+    return { ok: false, state: createDemoLedgerState(), source: "demo", warning: "No savepoint found." };
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    const result = normalizeLedgerBackup(parsed, "saved");
+    if (result.ok) {
+      // Promote savepoint to main
+      storage.setItem(LEDGER_STORAGE_KEY, raw);
+      storage.removeItem(SAVEPOINT_KEY);
+      return {
+        ...result,
+        warning: "Data recovered from emergency savepoint. Some recent changes may have been restored.",
+      };
+    }
+    return result;
+  } catch {
+    storage.removeItem(SAVEPOINT_KEY);
+    return { ok: false, state: createDemoLedgerState(), source: "demo", warning: "Savepoint was corrupted. Started fresh." };
+  }
 }
 
 export function clearLedgerState(storage: Storage) {

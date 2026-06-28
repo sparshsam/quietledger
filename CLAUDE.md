@@ -5,11 +5,14 @@
 OpenLedger is a private, local-first finance tool for everyday budgeting and records.
 Built with Next.js + TypeScript. Formerly QuietLedger.
 
-**Current Release:** v0.10.7 (2026-06-27)
+**Current Release:** v0.11.0 (2026-06-28)
 **Live domain:** https://ledger.kovina.org
-**Deploy status:** Production — PR #5 merged. All releases deployed.
+**Deploy status:** Local (PR #37 open — v0.10.8 & v0.10.9, PR #38 open — v0.11.0)
 
 Releases:
+           v0.11.0 — Platform Readiness (IndexedDB storage, offline detection, PWA install, code splitting, crash recovery, security headers, docs)
+           v0.10.9 — Automation (categorization rules, merchant aliases, recurring detection, auto-tagging)
+           v0.10.8 — Reports & Export (reports tab, print, enhanced backup, filtered CSV, report sharing)
            v0.10.7 — Search & Financial Memory (merchant profiles, advanced search engine, saved searches, timeline navigation, monthly highlights, year summaries)
            v0.10.6 — Accounts & Reconciliation (reconciliation workflow, opening/closing balances, balance adjustments, statement reconciliation, account health scoring)
            v0.10.5 — Budgets That Learn (automatic recommendations, rolling averages, budget health, forecasting, category rollover, history, adjustment suggestions)
@@ -36,7 +39,7 @@ Releases:
 - **Deployment:** Vercel → https://ledger.kovina.org
 - **GitHub:** https://github.com/sparshsam/openledger
 
-## Status — v0.10.7 (Search & Financial Memory)
+## Status — v0.11.0 (Platform Readiness)
 
 ### Auth — Complete Rebuild (June 27)
 The Google OAuth auth flow was completely rebuilt after root cause analysis revealed a Supabase **project mismatch**: the auth cookie was being set for OpenSprout's project (`rbdyrymtgfqqkdemicdo`) instead of OpenLedger's (`qoxmibmbyjmkntzrckyr`). This happened because `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` was missing from Vercel env (so the server callback silently failed), AND stale OpenSprout cookies on localhost were being read as valid sessions.
