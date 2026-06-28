@@ -71,7 +71,6 @@ import { McpTokensPanel } from "@/components/mcp-tokens-panel";
 import { ErrorBoundary } from "@/components/error-boundary";
 
 import { ReportsView } from "@/components/reports-view";
-import { AutomationPanel } from "@/components/automation/automation-panel";
 import { Select } from "@/components/select";
 import { DatePicker } from "@/components/date-picker";
 import { CurrencySettingsPanel } from "@/components/currency-settings-panel";
@@ -203,12 +202,9 @@ export default function Home() {
   const [activeAccountFilter, setActiveAccountFilter] = useState<string | null>(null);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string | null>(null);
   const [categoryLearnings, setCategoryLearnings] = useState<LearnedCategory[]>([]);
-<<<<<<< HEAD
+  const isOnline = useOnlineStatus();
   const [rules, setRules] = useState<CategorizationRule[]>([]);
   const [aliases, setAliases] = useState<MerchantAlias[]>([]);
-=======
-  const isOnline = useOnlineStatus();
->>>>>>> c61299d (release: v0.11.0 — Platform Readiness)
   const [importCreateMode, setImportCreateMode] = useState(false);
   const [importCreateModeName, setImportCreateModeName] = useState("");
   const [importCreateModeKind, setImportCreateModeKind] = useState<AccountKind>("chequing");

@@ -18,14 +18,12 @@ const config: CapacitorConfig = {
     CapacitorHttp: {
       enabled: true,
     },
-    GoogleAuth: {
-      // Set this to your Google Cloud OAuth web client ID for the native
-      // account picker to work. Get it from:
-      //   Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Web Client
-      // clientId: "xxxxx-xxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
-      scopes: ["profile", "email"],
-      forceCodeForRefreshToken: true,
-    },
+    // Native Google Auth plugin (account picker) — uncomment + install plugin:
+    // npm install <capacitor-8-compatible-google-auth-plugin>
+    // GoogleAuth: {
+    //   clientId: "xxxxx-xxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+    //   scopes: ["profile", "email"],
+    // },
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"],
     },

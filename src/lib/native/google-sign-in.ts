@@ -1,38 +1,26 @@
 // ─── Native Google Sign-In ────────────────────────────────────────────────
-// Two paths, tried in order:
-//   1. Native Google Auth plugin (phone account picker) — primary when configured
-//   2. @capacitor/browser (Chrome Custom Tab) — fallback / in-app browser
+// Primary: @capacitor/browser (Chrome Custom Tab) — stays in-app, works with
+//   Capacitor 8 out of the box. No additional setup needed.
 //
-// Manual setup needed for the account picker (you, the app owner):
-//   1. Go to Google Cloud Console → APIs & Services → Credentials
-//   2. Create OAuth 2.0 Client ID → "Android" → enter your app's
-//      signing certificate SHA-1 fingerprint + package name "org.kovina.ledger"
-//   3. Copy the WEB client ID (not Android) and set it in capacitor.config.ts
-//      under plugins.GoogleAuth.clientId (the native plugin uses the web client ID)
-//   4. If you skip this step, the app falls back to in-app browser sign-in
+// Optional: Native Android account picker — requires a Capacitor 8-compatible
+//   Google Auth plugin (e.g. @codetrix-studio/capacitor-google-auth, which
+//   currently supports Capacitor 6 only). Install it, set clientId in
+//   capacitor.config.ts, and the code below will try it first.
+//
+// Manual steps for the account picker (future):
+//   1. npm install <capacitor-8-compatible-google-auth-plugin>
+//   2. Add clientId to capacitor.config.ts under plugins.GoogleAuth.clientId
+//   3. Add 'openledger://auth/callback' to Supabase Auth allowed redirect URLs
+//   4. Do NOT add the custom scheme to Google Cloud OAuth (Google only accepts https://)
 
 import { getPlatformInfo } from "./platform";
 
 /**
- * Sign in with Google using the native Android account picker first,
- * falling back to in-app browser if the native plugin isn't available.
+ * Sign in with Google using the in-app browser (Chrome Custom Tab).
+ * This is the primary path — it works with Capacitor 8 and requires no
+ * additional plugin setup.
  */
-export async function signInWithGoogleNative(): Promise<{ success: boolean; method: "picker" | "browser" | "none" }> {
-  // --- Path 1: Native account picker (phone account selector) ---
-  try {
-    const { GoogleAuth } = await import("@codetrix-studio/capacitor-google-auth");
-    const user = await GoogleAuth.signIn();
-
-    if (user?.authentication?.idToken) {
-      // Exchange the Google idToken with Supabase to create a session
-      const exchanged = await exchangeGoogleIdToken(user.authentication.idToken);
-      if (exchanged) return { success: true, method: "picker" };
-    }
-  } catch (err) {
-    console.warn("[nativeSignIn] Native picker failed, falling back to browser:", err);
-  }
-
-  // --- Path 2: In-app browser (Chrome Custom Tab) ---
+export async function signInWithGoogleNative(): Promise<{ success: boolean; method: "browser" | "none" }> {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -67,37 +55,7 @@ export async function signInWithGoogleNative(): Promise<{ success: boolean; meth
 }
 
 /**
- * Exchange a Google idToken with Supabase to create a session.
- */
-async function exchangeGoogleIdToken(idToken: string): Promise<boolean> {
-  try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-    if (!supabaseUrl || !supabaseKey) return false;
-
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: { flowType: "pkce", detectSessionInUrl: false, autoRefreshToken: true },
-    });
-
-    const { error } = await supabase.auth.signInWithIdToken({
-      provider: "google",
-      token: idToken,
-    });
-
-    if (error) {
-      console.error("[nativeSignIn] Supabase token exchange failed:", error.message);
-      return false;
-    }
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Listen for the browser-based OAuth callback and exchange the PKCE code.
- * Only needed for the browser path — the native picker exchanges via idToken directly.
  */
 export async function listenForAuthCallback(
   onSuccess?: () => void,
