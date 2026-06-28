@@ -1,85 +1,103 @@
-// ─── Native Google Sign-In via In-App Browser ─────────────────────────────
-// Uses @capacitor/browser (Chrome Custom Tab) to open Google OAuth in-app,
-// then handles the callback via a custom scheme deep link.
+// ─── Native Google Sign-In ────────────────────────────────────────────────
+// Two paths, tried in order:
+//   1. Native Google Auth plugin (phone account picker) — primary when configured
+//   2. @capacitor/browser (Chrome Custom Tab) — fallback / in-app browser
 //
-// Flow:
-//   1. Call signInWithGoogleNative() → builds Supabase OAuth URL with
-//      skipBrowserRedirect:true and a custom scheme redirect
-//   2. Opens URL in Chrome Custom Tab via Browser.open()
-//   3. User signs in on Google
-//   4. Google redirects to openledger://auth/callback?code=...
-//   5. Capacitor App detects the deep link via appUrlOpen
-//   6. listenForAuthCallback extracts the code and calls exchangeCodeForSession
-//
-// Manual steps for the app owner:
-//   1. Add 'openledger://auth/callback' to Supabase Auth settings (Allowed redirect URLs)
-//   2. DO NOT add the custom scheme to Google Cloud OAuth — it only accepts https://
-//   3. Supabase sits in the middle and handles the translation
+// Manual setup needed for the account picker (you, the app owner):
+//   1. Go to Google Cloud Console → APIs & Services → Credentials
+//   2. Create OAuth 2.0 Client ID → "Android" → enter your app's
+//      signing certificate SHA-1 fingerprint + package name "org.kovina.ledger"
+//   3. Copy the WEB client ID (not Android) and set it in capacitor.config.ts
+//      under plugins.GoogleAuth.clientId (the native plugin uses the web client ID)
+//   4. If you skip this step, the app falls back to in-app browser sign-in
 
-import { createClient } from "@supabase/supabase-js";
 import { getPlatformInfo } from "./platform";
 
-// Create a temporary Supabase client for native OAuth — uses the same
-// project URL and publishable key as the web client.
-function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Supabase credentials not configured for native sign-in");
-  }
-  return createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      flowType: "pkce",
-      detectSessionInUrl: false,
-      autoRefreshToken: true,
-    },
-  });
-}
-
 /**
- * Open Google sign-in in an in-app Chrome Custom Tab.
- * Returns the PKCE authorization URL that was opened, or null if Capacitor
- * is not available (caller should fall back to web-based sign-in).
+ * Sign in with Google using the native Android account picker first,
+ * falling back to in-app browser if the native plugin isn't available.
  */
-export async function signInWithGoogleNative(): Promise<string | null> {
+export async function signInWithGoogleNative(): Promise<{ success: boolean; method: "picker" | "browser" | "none" }> {
+  // --- Path 1: Native account picker (phone account selector) ---
   try {
-    const supabase = getSupabaseClient();
+    const { GoogleAuth } = await import("@codetrix-studio/capacitor-google-auth");
+    const user = await GoogleAuth.signIn();
+
+    if (user?.authentication?.idToken) {
+      // Exchange the Google idToken with Supabase to create a session
+      const exchanged = await exchangeGoogleIdToken(user.authentication.idToken);
+      if (exchanged) return { success: true, method: "picker" };
+    }
+  } catch (err) {
+    console.warn("[nativeSignIn] Native picker failed, falling back to browser:", err);
+  }
+
+  // --- Path 2: In-app browser (Chrome Custom Tab) ---
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    if (!supabaseUrl || !supabaseKey) return { success: false, method: "none" };
+
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: { flowType: "pkce", detectSessionInUrl: false, autoRefreshToken: true },
+    });
+
     const info = getPlatformInfo();
     const redirectTo = `${info.appScheme}://auth/callback`;
 
-    // Get the OAuth URL from Supabase with PKCE flow
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo,
         skipBrowserRedirect: true,
-        queryParams: {
-          access_type: "offline",
-          prompt: "select_account",
-        },
+        queryParams: { access_type: "offline", prompt: "select_account" },
       },
     });
 
-    if (error || !data?.url) {
-      console.error("[nativeSignIn] Failed to create OAuth URL:", error?.message);
-      return null;
-    }
+    if (error || !data?.url) return { success: false, method: "none" };
 
-    // Open the URL in an in-app browser tab
     const { Browser } = await import("@capacitor/browser");
     await Browser.open({ url: data.url });
 
-    return data.url;
-  } catch (err) {
-    console.error("[nativeSignIn] Error:", err instanceof Error ? err.message : String(err));
-    return null;
+    return { success: true, method: "browser" };
+  } catch {
+    return { success: false, method: "none" };
   }
 }
 
 /**
- * Listen for the OAuth callback from the in-app browser via deep link.
- * Extracts the authorization code and exchanges it with Supabase.
- * Returns the callback's cleanup function.
+ * Exchange a Google idToken with Supabase to create a session.
+ */
+async function exchangeGoogleIdToken(idToken: string): Promise<boolean> {
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    if (!supabaseUrl || !supabaseKey) return false;
+
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: { flowType: "pkce", detectSessionInUrl: false, autoRefreshToken: true },
+    });
+
+    const { error } = await supabase.auth.signInWithIdToken({
+      provider: "google",
+      token: idToken,
+    });
+
+    if (error) {
+      console.error("[nativeSignIn] Supabase token exchange failed:", error.message);
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Listen for the browser-based OAuth callback and exchange the PKCE code.
+ * Only needed for the browser path — the native picker exchanges via idToken directly.
  */
 export async function listenForAuthCallback(
   onSuccess?: () => void,
@@ -87,46 +105,33 @@ export async function listenForAuthCallback(
 ): Promise<() => void> {
   try {
     const { App } = await import("@capacitor/app");
-    const supabase = getSupabaseClient();
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    if (!supabaseUrl || !supabaseKey) return () => {};
 
-    const handler = await App.addListener("appUrlOpen", async (data) => {
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: { flowType: "pkce", detectSessionInUrl: false, autoRefreshToken: true },
+    });
+
+    const handler = await App.addListener("appUrlOpen", async (data: { url: string }) => {
       const url = data.url;
       if (!url?.includes("auth/callback")) return;
 
-      // Parse the callback URL to extract the authorization code
       let code: string | null = null;
+      try { code = new URL(url).searchParams.get("code"); }
+      catch { code = url.match(/[?&]code=([^&]+)/)?.[1] ?? null; }
 
-      try {
-        const parsed = new URL(url);
-        code = parsed.searchParams.get("code");
-      } catch {
-        // URL parsing might fail for custom schemes on some platforms
-        const match = url.match(/[?&]code=([^&]+)/);
-        code = match ? decodeURIComponent(match[1]) : null;
-      }
+      if (!code) { onError?.("No auth code received."); return; }
 
-      if (!code) {
-        console.error("[nativeSignIn] No authorization code in callback URL:", url);
-        onError?.("No authorization code received from Google sign-in.");
-        return;
-      }
-
-      // Exchange the PKCE code for a session
       const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (error) { onError?.(error.message); return; }
 
-      if (error) {
-        console.error("[nativeSignIn] Code exchange failed:", error.message);
-        onError?.(error.message);
-        return;
-      }
-
-      console.log("[nativeSignIn] Session established successfully");
       onSuccess?.();
     });
 
     return () => { handler.remove(); };
-  } catch (err) {
-    console.error("[nativeSignIn] Failed to set up auth listener:", err);
+  } catch {
     return () => {};
   }
 }
